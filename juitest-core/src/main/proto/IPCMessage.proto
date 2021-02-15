@@ -1,0 +1,90 @@
+
+syntax = "proto3";
+
+option java_package = "de.renebergelt.juitest.core.comm.messages";
+option java_outer_classname = "IPCProtocol";
+
+message IPCMessage {
+    oneof content {
+        AttachMessage attach = 1;
+        SimpleResponseMessage simpleResponse = 2;
+        RunTestMessage runTest = 3;
+        CancelTestMessage cancelTest = 4;
+        TestResultMessage testResult = 5;
+        TestLogMessage testLog = 6;
+        TestPausedMessage testPaused = 7;
+        ResumeTestMessage resumeTest = 8;
+    };
+}
+
+message SimpleResponseMessage {
+    ResponseStatus status = 1;
+}
+
+// Launches the client software which should be automated
+// and attaches the monitor
+message AttachMessage {
+    repeated string programArguments = 1;
+}
+
+// Indicates that the given test should be run
+message RunTestMessage {
+    // unique identifier for this test
+    string testId = 1;
+    string testClassName = 2;
+    repeated TestParameter parameters = 3;
+}
+
+// Aborts execution of the running test with the given id
+message CancelTestMessage {
+    string testId = 1;
+}
+
+// sent when a test's execution ends (i.e. it finishes or is cancelled)
+message TestResultMessage {
+    string testId = 1;
+    TestResult result = 2;
+
+    // if result is not SUCCESS, error description goes here
+    string errorDescription = 3;
+}
+
+// contains a log message from a text
+message TestLogMessage {
+    string testId = 1;
+    string text = 2;
+}
+
+// message which indicates that test execution has been paused
+message TestPausedMessage {
+    string testId = 1;
+    string message = 2;
+}
+
+// message which indicates that a paused test should be continued
+message ResumeTestMessage {
+    string testId = 1;
+}
+
+message TestParameter {
+    string name = 1;
+    oneof value {
+        string str_value = 2;
+        int32 int_value = 3;
+        int64 long_value = 4;
+        float float_value = 5;
+        bool bool_value = 6;
+    }
+}
+
+enum ResponseStatus {
+    OK = 0;
+    FAILED = 1;
+}
+
+enum TestResult {
+    SUCCESS = 0;
+    FAILURE = 1;
+    TIMEOUT = 2;
+    CANCELED = 3;
+}

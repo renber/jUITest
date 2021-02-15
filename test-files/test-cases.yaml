@@ -1,0 +1,11 @@
+defaults:
+  default-package: com.example.mytestpackage
+
+test-sets:
+  - Sample Tests:
+    - .FirstTest:
+      - 'A First simple test'
+      - 'A Second Simple test'
+  - Second:
+    - .Foo:
+      - 'Foo Test'
