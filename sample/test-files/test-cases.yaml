@@ -1,0 +1,9 @@
+defaults:
+  default-package: de.renebergelt.juitest.samples.calculator.uitests.tests
+
+test-sets:
+  - Basic Tests:
+    - .CalculatorAddTest:
+      - 'Adding two numbers (25 and 33)':
+          operandOne: 25
+          operandTwo: 33

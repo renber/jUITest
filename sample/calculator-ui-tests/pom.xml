@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.renebergelt.juitest.samples</groupId>
+    <artifactId>calculator-ui-tests</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>de.renebergelt.juitest.samples</groupId>
+            <artifactId>calculator-app</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+		<dependency>
+			<groupId>de.renebergelt.juitest</groupId>
+			<artifactId>juitest-core</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
+        <dependency>
+            <groupId>de.renebergelt.juitest</groupId>
+            <artifactId>juitest-host</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+        	<groupId>de.renber</groupId>
+			<artifactId>xbindings</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+        <dependency>
+            <groupId>de.renebergelt.juitest.samples</groupId>
+            <artifactId>calculator-app</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+</project>
