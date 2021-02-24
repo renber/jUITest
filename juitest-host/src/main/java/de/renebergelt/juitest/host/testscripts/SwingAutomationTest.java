@@ -247,4 +247,41 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
         }
     }
 
+    /**
+     * Return the first component of the given class which is a child of parent or contained in
+     * any of parent's children
+     * @param parent The container to start searching for the class
+     * @param componentClass The class of the component to find
+     * @param <T> The class of the component to find
+     * @return Component instance if found or null otherwise
+     */
+    public static <T extends Component> T findComponent(Container parent, Class<T> componentClass) {
+        return findComponent(parent, componentClass, (c) -> true);
+    }
+
+    /**
+     * Return the first component of the given class which is a child of parent or contained in
+     * any of parent's children and which fulfills the given condition
+     * @param parent The container to start searching for the class
+     * @param componentClass The class of the component to find
+     * @param <T> The class of the component to find
+     * @return Component instance if found or null otherwise
+     */
+    public static <T extends Component> T findComponent(Container parent, Class<T> componentClass, Predicate<T> condition) {
+        for(int i = 0; i < parent.getComponentCount(); i++) {
+            Component c = parent.getComponent(i);
+            if (componentClass.isInstance(c) && condition.test((T)c)) {
+                return (T)c;
+            }
+            if (c instanceof  Container) {
+                T cc = findComponent((Container)c, componentClass, condition);
+                if (cc != null) {
+                    return cc;
+                }
+            }
+        }
+
+        return null;
+    }
+
 }
