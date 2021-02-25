@@ -1,5 +1,5 @@
 # jUITest
-A gray-box testing framework for Java UI application
+A gray-box testing framework for Java UI applications
 
 ## Gray-box UI testing
 
