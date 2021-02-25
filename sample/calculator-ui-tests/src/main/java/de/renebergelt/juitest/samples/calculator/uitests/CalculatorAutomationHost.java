@@ -11,7 +11,7 @@ public class CalculatorAutomationHost implements UIAutomationHost {
 
     protected CalculatorFrame frame;
 
-    public JFrame getFrame() {
+    public CalculatorFrame getFrame() {
         return frame;
     }
 

@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
  */
 public abstract class CalculatorAutomationTest  extends SwingAutomationTest<CalculatorAutomationHost> {
 
-    CalculatorAutomationHost context;
+    protected CalculatorAutomationHost context;
 
     @Override
     protected void doRun(CalculatorAutomationHost context) throws CancellationException, TimeoutException, UITestException {
@@ -23,7 +23,8 @@ public abstract class CalculatorAutomationTest  extends SwingAutomationTest<Calc
 
     /**
      * Inputs the given number into the calculator by
-     * pressing the appropriate digit buttons
+     * pressing the appropriate digit buttons and checks
+     * if the UI displays the correct number afterwards
      */
     protected void inputNumber(int number) {
         // Input the number digit by digit

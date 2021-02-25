@@ -121,7 +121,7 @@ public class CalculatorFrame extends JFrame implements ActionListener {
         txtDisplay.setText(String.valueOf(value));
     }
 
-    private int getDisplayValue() {
+    public int getDisplayValue() {
         return Integer.valueOf(txtDisplay.getText());
     }
 

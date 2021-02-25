@@ -1,4 +1,4 @@
-language: sys
+language: en
 runner:
   launchArguments:
     - 'sample argument'
