@@ -1,7 +1,8 @@
 package de.renebergelt.juitest.samples.calculator.uitests.tests;
 
+import de.renebergelt.juitest.core.annotations.UITest;
+import de.renebergelt.juitest.core.annotations.UITestClass;
 import de.renebergelt.juitest.core.exceptions.UITestException;
-import de.renebergelt.juitest.host.testscripts.SwingAutomationTest;
 import de.renebergelt.juitest.samples.calculator.uitests.CalculatorAutomationHost;
 import de.renebergelt.juitest.samples.calculator.uitests.CalculatorAutomationTest;
 
@@ -11,32 +12,31 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
+@UITestClass
 public class CalculatorAddTest extends CalculatorAutomationTest {
 
-    Integer operandOne = null;
-    Integer operandTwo = null;
+    @UITest(description="Sum of 25 and 13")
+    public void add() throws CancellationException, TimeoutException, UITestException {
+        inputNumber(25);
+        AbstractButton addBtn = findComponent(context.getFrame(), AbstractButton.class, (b) -> "+".equals(b.getText()));
+        assertNotNull(addBtn);
+        uiActionWait(() -> addBtn.doClick());
+        // the add button should now be pressed
+        assertTrue(addBtn.isSelected());
+        inputNumber(13);
 
-    @Override
-    public String getName() {
-        return "AddTests";
+        AbstractButton eqBtn = findComponent(context.getFrame(), AbstractButton.class, (b) -> "=".equals(b.getText()));
+        assertNotNull(eqBtn);
+        uiActionWait(() -> eqBtn.doClick());
+
+        // check the result
+        assertEquals(String.valueOf(25 + 13), findComponent(context.getFrame(), JTextField.class).getText());
+        // add button should now be unpressed
+        assertFalse(addBtn.isSelected());
     }
 
-    @Override
-    public void setParameter(String parameterName, Object parameterValue) {
-        switch(parameterName) {
-            case "operandOne": operandOne = (int)parameterValue; break;
-            case "operandTwo": operandTwo = (int)parameterValue; break;
-        }
-    }
-
-    @Override
-    protected void doRun(CalculatorAutomationHost context) throws CancellationException, TimeoutException, UITestException {
-        super.doRun(context);
-
-        if (operandOne == null || operandTwo == null) {
-            throw new UITestException("Missing parameters");
-        }
-
+    @UITest(parameters={"operandOne", "{{set:5,10}}", "operandTwo", "{{set:26,8}}"})
+    public void add_with_params(int operandOne, int operandTwo) throws CancellationException, TimeoutException, UITestException {
         inputNumber(operandOne);
         AbstractButton addBtn = findComponent(context.getFrame(), AbstractButton.class, (b) -> "+".equals(b.getText()));
         assertNotNull(addBtn);

@@ -3,6 +3,7 @@ package de.renebergelt.juitest.core.services;
 import de.renebergelt.juitest.core.TestDescriptor;
 import de.renebergelt.juitest.core.exceptions.UITestException;
 
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 
@@ -27,6 +28,11 @@ public interface TestRunnerService {
      * Disattach from the automation instance
      */
     void disattach();
+
+    /**
+     * Return a list of all available tests
+     */
+    List<TestDescriptor> discoverTests();
 
     /**
      * Run the given test in the attached applications's UI process

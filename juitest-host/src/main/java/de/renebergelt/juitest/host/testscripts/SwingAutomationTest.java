@@ -15,10 +15,6 @@ import java.util.function.Supplier;
 
 public abstract class SwingAutomationTest<THost extends UIAutomationHost> extends UIAutomationTest<THost> {
 
-    public SwingAutomationTest(Object...namedParameters) {
-        super(namedParameters);
-    }
-
     /**
      * Execute the given method in the UI thread (i.e. Swing's Event Dispatch Thread)
      * and block until the action has finished

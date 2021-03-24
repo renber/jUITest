@@ -1,4 +1,4 @@
-import de.renebergelt.juitest.monitor.testsetdefinition.functions.TestNameResolver;
+import de.renebergelt.juitest.core.parameterfunctions.TestDescriptionResolver;
 import org.junit.Test;
 
 import java.util.regex.Matcher;
@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
-public class ScriptNameParamResolverTest {
+public class TestDescriptionParamResolverTest {
 
     @Test
     public void testFunctionExtractionRegExp() {
@@ -25,7 +25,7 @@ public class ScriptNameParamResolverTest {
     public void testScriptNameParamResolver() {
         String test = "Test {{p:foo}} Test {{p:bar}}";
 
-        TestNameResolver r = new TestNameResolver();
+        TestDescriptionResolver r = new TestDescriptionResolver();
         String s = r.resolve(test, new Object[] {"foo", "ValueOne", "bar", "ValueTwo"});
 
         assertEquals("Test ValueOne Test ValueTwo", s);

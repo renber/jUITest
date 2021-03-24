@@ -1,5 +1,8 @@
 package de.renebergelt.juitest.host;
 
+import de.renebergelt.juitest.core.TestDescriptor;
+import de.renebergelt.juitest.core.annotations.UITest;
+import de.renebergelt.juitest.core.annotations.UITestClass;
 import de.renebergelt.juitest.core.comm.messages.IPCProtocol;
 import de.renebergelt.juitest.core.exceptions.UITestException;
 import de.renebergelt.juitest.core.comm.IPCHandler;
@@ -8,10 +11,22 @@ import de.renebergelt.juitest.host.comm.IPCServer;
 import de.renebergelt.juitest.host.services.SameProcessTestRunnerService;
 import de.renebergelt.juitest.host.testscripts.UIAutomationHost;
 import de.renebergelt.juitest.core.services.IPCTransmitter;
+import de.renebergelt.juitest.host.testscripts.UIAutomationTest;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 
@@ -22,11 +37,11 @@ public class UITestRunner implements IPCHandler {
     private String host;
     private int port;
 
-    public UITestRunner(String host, int port, UIAutomationHost automationHost) {
+    public UITestRunner(String host, int port, UIAutomationHost automationHost, String testBasePackage) {
         this.host = host;
         this.port = port;
 
-        this.localTestRunner = new SameProcessTestRunnerService(automationHost);
+        this.localTestRunner = new SameProcessTestRunnerService(automationHost, testBasePackage);
     }
 
     public void start() {
@@ -40,6 +55,10 @@ public class UITestRunner implements IPCHandler {
             }
         });
         t.start();
+    }
+
+    public List<TestDescriptor> discoverTests() {
+        return localTestRunner.discoverTests();
     }
 
     @Override
@@ -56,6 +75,14 @@ public class UITestRunner implements IPCHandler {
                 }
 
                 return IPCMessages.createSimpleResponseMessage(IPCProtocol.ResponseStatus.OK);
+            } catch (Exception e) {
+                return IPCMessages.createSimpleResponseMessage(IPCProtocol.ResponseStatus.FAILED);
+            }
+        }
+
+        if (message.hasGetTests()) {
+            try {
+                return IPCMessages.createTestListMessage(discoverTests());
             } catch (Exception e) {
                 return IPCMessages.createSimpleResponseMessage(IPCProtocol.ResponseStatus.FAILED);
             }

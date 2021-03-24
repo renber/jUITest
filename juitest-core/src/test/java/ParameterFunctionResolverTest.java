@@ -1,4 +1,4 @@
-import de.renebergelt.juitest.monitor.testsetdefinition.functions.ParameterFunctionResolver;
+import de.renebergelt.juitest.core.parameterfunctions.ParameterFunctionResolver;
 import org.junit.Test;
 
 import java.util.ArrayList;

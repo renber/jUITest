@@ -1,5 +1,7 @@
 package de.renebergelt.juitest.samples.calculator.uitests.tests;
 
+import de.renebergelt.juitest.core.annotations.UITest;
+import de.renebergelt.juitest.core.annotations.UITestClass;
 import de.renebergelt.juitest.core.exceptions.UITestException;
 import de.renebergelt.juitest.samples.calculator.CalculatorFrame;
 import de.renebergelt.juitest.samples.calculator.uitests.CalculatorAutomationHost;
@@ -11,34 +13,11 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
+@UITestClass
 public class CalculatorFunctionTest extends CalculatorAutomationTest {
 
-    String functionToTest = null;
-
-    @Override
-    public String getName() {
-        return "function test";
-    }
-
-    @Override
-    public void setParameter(String parameterName, Object parameterValue) {
-        if ("functionToTest".equals(parameterName)) {
-            functionToTest = String.valueOf(parameterValue);
-        }
-    }
-
-    @Override
-    protected void doRun(CalculatorAutomationHost context) throws CancellationException, TimeoutException, UITestException {
-        super.doRun(context);
-
-        switch(functionToTest) {
-            case "Clear": runTest_Clear(); break;
-            case "SwapSign": runTest_SwapSign(); break;
-            default: throw new UITestException("Unknown functionToTest " + functionToTest);
-        }
-    }
-
-    protected void runTest_Clear() {
+    @UITest
+    public void clear() {
         CalculatorFrame frame = context.getFrame();
         JTextField txtDisplay = findComponent(frame, JTextField.class);
 
@@ -59,7 +38,8 @@ public class CalculatorFunctionTest extends CalculatorAutomationTest {
         assertEquals(0, frame.getDisplayValue());
     }
 
-    protected void runTest_SwapSign() {
+    @UITest
+    public void swapSign() {
         CalculatorFrame frame = context.getFrame();
         JTextField txtDisplay = findComponent(frame, JTextField.class);
 

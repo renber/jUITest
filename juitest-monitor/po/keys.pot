@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 11:14+0100\n"
+"POT-Creation-Date: 2021-03-24 13:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,14 +57,14 @@ msgstr ""
 msgid "Information"
 msgstr ""
 
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:95
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:316
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:367
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:97
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:318
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:372
 #: de/renebergelt/juitest/monitor/views/MainView.java:70
 msgid "Ready"
 msgstr ""
 
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:123
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:125
 #, java-format
 msgid ""
 "Execution of the current test has been paused with the following message:\n"
@@ -73,26 +73,19 @@ msgid ""
 "Click OK to continue test execution."
 msgstr ""
 
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:224
-#, java-format
-msgid ""
-"Could not load test cases from file '{0}'.\n"
-"Error message: {1}"
-msgstr ""
-
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:233
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:235
 msgid "<All tests>"
 msgstr ""
 
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:297
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:299
 msgid "Running tests"
 msgstr ""
 
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:348
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:353
 msgid "Launching Application under test"
 msgstr ""
 
-#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:359
+#: de/renebergelt/juitest/monitor/viewmodels/MainViewModel.java:364
 #, java-format
 msgid ""
 "Could not connect to the test runner. Please ensure that it has been "

@@ -1,4 +1,4 @@
-package de.renebergelt.juitest.monitor.testsetdefinition.functions;
+package de.renebergelt.juitest.core.parameterfunctions;
 
 import java.util.*;
 

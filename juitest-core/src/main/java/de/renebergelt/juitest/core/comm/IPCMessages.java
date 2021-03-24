@@ -27,7 +27,32 @@ public class IPCMessages {
         return builder.build();
     }
 
-    public static IPCProtocol.IPCMessage createRunTestMessage(String testClassName, Object...parameters) {
+    public static IPCProtocol.IPCMessage createGetTestsMessage() {
+        IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
+        return builder.setGetTests(IPCProtocol.GetTestsMessage.newBuilder().build()).build();
+    }
+
+    public static IPCProtocol.IPCMessage createTestListMessage(List<TestDescriptor> tests) {
+        IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
+        IPCProtocol.TestListMessage.Builder mBuilder = IPCProtocol.TestListMessage.newBuilder();
+        for (TestDescriptor td: tests) {
+            IPCProtocol.TestDescriptor.Builder tBuilder = IPCProtocol.TestDescriptor.newBuilder();
+            tBuilder.setTestClassName(td.getTestClassName());
+            tBuilder.setTestMethodName(td.getTestMethodName());
+            tBuilder.setDescription(td.getDescription());
+
+            for(int i = 0; i < td.getParameters().length; i+=2) {
+                tBuilder.addParameters(convertParameter(String.valueOf(td.getParameters()[i]), td.getParameters()[i+1]));
+            }
+
+            mBuilder.addTests(tBuilder.build());
+        }
+
+        builder.setTestList(mBuilder.build());
+        return builder.build();
+    }
+
+    public static IPCProtocol.IPCMessage createRunTestMessage(String testClassName, String testMethodName, Object...parameters) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 
         // build test parameters
@@ -58,8 +83,70 @@ public class IPCMessages {
             params.add(pBuilder.build());
         }
 
-        builder.setRunTest(IPCProtocol.RunTestMessage.newBuilder().setTestClassName(testClassName).addAllParameters(params).build());
+        builder.setRunTest(IPCProtocol.RunTestMessage.newBuilder()
+                .setTestClassName(testClassName)
+                .setTestMethodName(testMethodName)
+                .addAllParameters(params).build());
         return builder.build();
+    }
+
+    private static IPCProtocol.TestParameter convertParameter(String name, Object value) {
+        IPCProtocol.TestParameter.Builder builder = IPCProtocol.TestParameter.newBuilder();
+        builder.setName(name);
+
+        if (value instanceof Integer) {
+            builder.setIntValue((int)value);
+        } else if (value instanceof Float) {
+            builder.setFloatValue((float)value);
+        } else if (value instanceof Long) {
+            builder.setLongValue((long)value);
+        } else if (value instanceof Boolean) {
+            builder.setBoolValue((boolean)value);
+        } else {
+            builder.setStrValue(String.valueOf(value));
+        }
+
+        return builder.build();
+    }
+
+    public static List<TestDescriptor> readTestListMessage(IPCProtocol.TestListMessage message) {
+
+        List<TestDescriptor> rList = new ArrayList<>();
+
+        for (IPCProtocol.TestDescriptor ptd : message.getTestsList()) {
+
+            List<Object> parameters = new ArrayList<>();
+
+            for (IPCProtocol.TestParameter param : ptd.getParametersList()) {
+                parameters.add(param.getName());
+                switch (param.getValueCase()) {
+                    case STR_VALUE:
+                        parameters.add(param.getStrValue());
+                        break;
+                    case INT_VALUE:
+                        parameters.add(param.getIntValue());
+                        break;
+                    case LONG_VALUE:
+                        parameters.add(param.getLongValue());
+                        break;
+                    case FLOAT_VALUE:
+                        parameters.add(param.getFloatValue());
+                        break;
+                    case BOOL_VALUE:
+                        parameters.add(param.getBoolValue());
+                        break;
+                    case VALUE_NOT_SET:
+                        parameters.add(null);
+                        break;
+                }
+            }
+
+            TestDescriptor td = new TestDescriptor(ptd.getTestClassName(), ptd.getTestMethodName(), parameters.toArray());
+            td.setDescription(ptd.getDescription());
+            rList.add(td);
+        }
+
+        return rList;
     }
 
     public static TestDescriptor readRunTestMessage(IPCProtocol.RunTestMessage message) {
@@ -89,7 +176,7 @@ public class IPCMessages {
             }
         }
 
-        return new TestDescriptor(message.getTestClassName(), message.getTestClassName(), parameters.toArray());
+        return new TestDescriptor(message.getTestClassName(), message.getTestMethodName(), parameters.toArray());
     }
 
     public static IPCProtocol.IPCMessage createTestResultMessage(IPCProtocol.TestResult result, Optional<String> errorText) {

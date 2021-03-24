@@ -1,12 +1,12 @@
-package de.renebergelt.juitest.monitor.testsetdefinition.functions;
+package de.renebergelt.juitest.core.parameterfunctions;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Replaces {{p:parameter}} in a test name with the parameter values
+ * Replaces {{p:parameter}} in a test description with the parameter values
  */
-public class TestNameResolver {
+public class TestDescriptionResolver {
 
     public String resolve(String name, Object[] parameters) {
 

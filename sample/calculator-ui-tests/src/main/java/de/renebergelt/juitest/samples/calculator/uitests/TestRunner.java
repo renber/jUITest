@@ -5,7 +5,7 @@ import de.renebergelt.juitest.host.UITestRunner;
 public class TestRunner {
 
     public static void main(String[] args) {
-        UITestRunner host = new UITestRunner("127.0.0.1", 5612, new CalculatorAutomationHost());
+        UITestRunner host = new UITestRunner("127.0.0.1", 5612, new CalculatorAutomationHost(), "de.renebergelt.juitest.samples.calculator.uitests.tests");
         host.start();
     }
 

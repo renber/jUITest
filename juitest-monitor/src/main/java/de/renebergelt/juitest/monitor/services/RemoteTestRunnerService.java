@@ -55,6 +55,17 @@ public class RemoteTestRunnerService implements TestRunnerService, IPCMessageLis
         }
     }
 
+    public List<TestDescriptor> discoverTests() {
+        if (!isAttached())
+            throw new IllegalStateException("Test monitor not attached");
+
+        IPCProtocol.IPCMessage response = client.send(IPCMessages.createGetTestsMessage());
+        if (response.hasTestList()) {
+            return IPCMessages.readTestListMessage(response.getTestList());
+        } else
+            throw new IllegalStateException("Unexpected response message");
+    }
+
     @Override
     public void disattach() {
         if (client != null) {
@@ -71,7 +82,7 @@ public class RemoteTestRunnerService implements TestRunnerService, IPCMessageLis
         if (!isAttached())
             throw new IllegalStateException("Test monitor not attached");
 
-        IPCProtocol.IPCMessage result = client.send(IPCMessages.createRunTestMessage(testDescriptor.getTestClassName(), testDescriptor.getParameters()));
+        IPCProtocol.IPCMessage result = client.send(IPCMessages.createRunTestMessage(testDescriptor.getTestClassName(), testDescriptor.getTestMethodName(), testDescriptor.getParameters()));
         if (result.hasTestResult()) {
             switch (result.getTestResult().getResult()) {
                 case SUCCESS:

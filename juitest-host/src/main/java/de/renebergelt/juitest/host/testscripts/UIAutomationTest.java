@@ -19,31 +19,16 @@ public abstract class UIAutomationTest<THost extends UIAutomationHost> {
     public static final Timeout DEFAULT_TIMEOUT = Timeout.minutes(1);
     protected boolean cancellationRequested;
     TestExecutionListener executionListener;
+    protected THost context;
 
     protected AtomicReference<AutoResetEvent> currentEvent = new AtomicReference<AutoResetEvent>();
 
-    public abstract String getName();
+    public void setContext(THost context) {
+        this.context = context;
+    }
 
     public void setExecutionListener(TestExecutionListener executionListener) {
         this.executionListener = executionListener;
-    }
-
-    public UIAutomationTest(Object... namedParameters) {
-        if (namedParameters.length % 2 != 0)
-            throw new IllegalArgumentException("namedParameters");
-
-        for(int i = 0; i < namedParameters.length; i += 2) {
-            setParameter(String.valueOf(namedParameters[i]), namedParameters[i + 1]);
-        }
-    }
-
-    /**
-     * Run this script
-     * (Should be called from a thread separate from the EDT)
-     */
-    public void run(THost context) throws CancellationException, TimeoutException, UITestException {
-        cancellationRequested = false;
-        doRun(context);
     }
 
     /**
@@ -123,9 +108,4 @@ public abstract class UIAutomationTest<THost extends UIAutomationHost> {
         if (!condition.get())
             throw new AutomationException("Condition not satisfied: " + failureMessage);
     }
-
-    public abstract void setParameter(String parameterName, Object parameterValue);
-
-    protected abstract void doRun(THost context) throws CancellationException, TimeoutException, UITestException;
-
 }

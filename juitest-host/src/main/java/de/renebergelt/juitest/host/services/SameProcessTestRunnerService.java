@@ -1,5 +1,8 @@
 package de.renebergelt.juitest.host.services;
 
+import de.renber.quiterables.QuIterables;
+import de.renebergelt.juitest.core.annotations.UITest;
+import de.renebergelt.juitest.core.parameterfunctions.ParameterFunctionResolver;
 import de.renebergelt.juitest.host.testscripts.UIAutomationTest;
 import de.renebergelt.juitest.core.TestDescriptor;
 import de.renebergelt.juitest.core.comm.IPCMessages;
@@ -9,10 +12,17 @@ import de.renebergelt.juitest.core.services.IPCTransmitter;
 import de.renebergelt.juitest.core.services.TestExecutionListener;
 import de.renebergelt.juitest.core.services.TestRunnerService;
 import de.renebergelt.juitest.core.services.TestStatusListener;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
 
 import javax.swing.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,6 +38,8 @@ public class SameProcessTestRunnerService implements TestRunnerService {
 
     UIAutomationHost automationHost;
 
+    String testBasePackage;
+
     public void setTransmitter(IPCTransmitter transmitter) {
         this.transmitter = transmitter;
 
@@ -36,13 +48,62 @@ public class SameProcessTestRunnerService implements TestRunnerService {
         }
     }
 
-    public SameProcessTestRunnerService(UIAutomationHost host) {
+    public SameProcessTestRunnerService(UIAutomationHost host, String testBasePackage) {
         this.automationHost = host;
+        this.testBasePackage = testBasePackage;
     }
 
     @Override
     public boolean isAttached() {
         return automationHost != null && automationHost.hasLaunched();
+    }
+
+    public List<TestDescriptor> discoverTests() {
+        System.out.println("Discovering tests using Reflections");
+        List<TestDescriptor> descriptors = new ArrayList<>();
+
+        ParameterFunctionResolver paramResolver = new ParameterFunctionResolver();
+
+        // Find all methods which are annotated with UiTest
+        Reflections ref = new Reflections(testBasePackage, new MethodAnnotationsScanner());
+        Set<Method> testMethods = ref.getMethodsAnnotatedWith(UITest.class);
+        for (Method m : testMethods) {
+            // make sure that the declaring class is of type UIAutomationTest
+            boolean isTestClass = UIAutomationTest.class.isAssignableFrom(m.getDeclaringClass());
+            if (isTestClass) {
+                System.out.println(m.getDeclaringClass().getSimpleName() + "." + m.getName());
+
+                // any parameters?
+                UITest annot = m.getAnnotation(UITest.class);
+
+                // default content is ""
+                if (annot.parameters().length % 2 != 0) {
+                    System.out.println("The test parameter definition of method " + m.getDeclaringClass().getSimpleName() + "." + m.getName() + " is invalid.");
+                    continue;
+                }
+
+                if (annot.parameters().length > 0) {
+                    for(Object[] paramSet: paramResolver.resolveParameterSets(annot.parameters())) {
+                        TestDescriptor td = new TestDescriptor(m.getDeclaringClass().getCanonicalName(), m.getName(), paramSet);
+                        if (annot.description() != null && !annot.description().isEmpty()) {
+                            td.setDescription(annot.description());
+                        }
+                        descriptors.add(td);
+                    }
+                } else {
+                    TestDescriptor td = new TestDescriptor(m.getDeclaringClass().getCanonicalName(), m.getName());
+                    if (annot.description() != null && !annot.description().isEmpty()) {
+                        td.setDescription(annot.description());
+                    }
+                    descriptors.add(td);
+                }
+
+            } else {
+                System.out.println("Class " + m.getDeclaringClass().getCanonicalName() + " contains UITest methods but has not been derived from class UIAutomationTest");
+            }
+        }
+
+        return descriptors;
     }
 
     @Override
@@ -80,12 +141,13 @@ public class SameProcessTestRunnerService implements TestRunnerService {
 
         // instantiate the test class
         UIAutomationTest test = instantiateTest(testDescriptor);
+        test.setContext(automationHost);
 
         AutomationTestThread aThread = currentRunningTest.updateAndGet((current) -> {
             if (current != null)
                 throw new IllegalStateException("Cannot start a new test when a different test is still running.");
 
-            AutomationTestThread at = AutomationTestThread.createThreadFor(automationHost, test);
+            AutomationTestThread at = AutomationTestThread.createThreadFor(automationHost, test, testDescriptor);
             return at;
         });
 
@@ -134,13 +196,6 @@ public class SameProcessTestRunnerService implements TestRunnerService {
             Constructor<?> ctor = clazz.getConstructor();
             UIAutomationTest instance = (UIAutomationTest)ctor.newInstance();
 
-            // set parameters
-            Object[] params = descriptor.getParameters();
-
-            for(int pidx = 0; pidx < descriptor.getParameters().length; pidx += 2) {
-                instance.setParameter(String.valueOf(params[pidx]), params[pidx + 1]);
-            }
-
             return instance;
         } catch (ClassNotFoundException e) {
             throw new UITestException("Invalid test class: " + descriptor.getTestClassName(), e);
@@ -162,6 +217,7 @@ public class SameProcessTestRunnerService implements TestRunnerService {
     static class AutomationTestThread {
         private Thread thread;
         private UIAutomationTest test;
+        private TestDescriptor testDescriptor;
         private Runnable threadBody;
         private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
         private AtomicReference<Throwable> failException = new AtomicReference<>(null);
@@ -170,14 +226,53 @@ public class SameProcessTestRunnerService implements TestRunnerService {
             test.setExecutionListener(executionListener);
         }
 
-        private AutomationTestThread(UIAutomationHost context, UIAutomationTest test) {
+        private AutomationTestThread(UIAutomationHost context, UIAutomationTest test, TestDescriptor testDescriptor) {
             this.test = test;
+            this.testDescriptor = testDescriptor;
 
             threadBody = () -> {
                 failException.set(null);
 
                 try {
-                    test.run(context);
+                    // find the correct method by name (we do not know the parameter types, only the count)
+                    Method[] methods = test.getClass().getMethods();
+                    List<Method> availableMethods = QuIterables.query(methods).where(x -> testDescriptor.getTestMethodName().equals(x.getName()) && x.isAnnotationPresent(UITest.class)).toList();
+                    if (availableMethods.size() == 0) {
+                        throw new RuntimeException("UiTest method " + test.getClass().getCanonicalName() + "." + testDescriptor.getTestMethodName() + " does not exist");
+                    }
+                    Method method = null;
+                    for(Method m: availableMethods) {
+                        UITest annot = m.getAnnotation(UITest.class);
+                        // check if the parameters match
+                        if (annot.parameters().length == testDescriptor.getParameters().length) {
+                            boolean namesMatch = true;
+                            for(int nameIdx = 0; nameIdx < annot.parameters().length; nameIdx += 2) {
+                                if (!annot.parameters()[nameIdx].equals(testDescriptor.getParameters()[nameIdx])) {
+                                    namesMatch = false;
+                                    break;
+                                }
+                            }
+                            if (namesMatch) {
+                                method = m;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (method == null) {
+                        throw new RuntimeException("UiTest method " + test.getClass().getCanonicalName() + "." + testDescriptor.getTestMethodName() + " is missing parameters");
+                    }
+
+                    if (method.getParameterCount() == 0) {
+                        method.invoke(test);
+                    } else {
+                        // select parameter values
+                        Object[] paramValues = new Object[testDescriptor.getParameters().length / 2];
+                        for(int i = 0; i < paramValues.length; i++) {
+                            paramValues[i] = testDescriptor.getParameters()[i*2 + 1];
+                        }
+                        method.invoke(test, paramValues);
+                    }
                 } catch (Exception e) {
                     failException.getAndUpdate( (v) -> {
                         if (v == null)
@@ -274,8 +369,8 @@ public class SameProcessTestRunnerService implements TestRunnerService {
             thread.interrupt();
         }
 
-        public static AutomationTestThread createThreadFor(UIAutomationHost context, UIAutomationTest test) {
-            return new AutomationTestThread(context, test);
+        public static AutomationTestThread createThreadFor(UIAutomationHost context, UIAutomationTest test, TestDescriptor testDescriptor) {
+            return new AutomationTestThread(context, test, testDescriptor);
         }
     }
 }

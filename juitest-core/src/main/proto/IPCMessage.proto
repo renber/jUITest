@@ -8,12 +8,14 @@ message IPCMessage {
     oneof content {
         AttachMessage attach = 1;
         SimpleResponseMessage simpleResponse = 2;
-        RunTestMessage runTest = 3;
-        CancelTestMessage cancelTest = 4;
-        TestResultMessage testResult = 5;
-        TestLogMessage testLog = 6;
-        TestPausedMessage testPaused = 7;
-        ResumeTestMessage resumeTest = 8;
+        GetTestsMessage getTests = 3;
+        RunTestMessage runTest = 4;
+        CancelTestMessage cancelTest = 5;
+        TestListMessage testList = 6;
+        TestResultMessage testResult = 7;
+        TestLogMessage testLog = 8;
+        TestPausedMessage testPaused = 9;
+        ResumeTestMessage resumeTest = 10;
     };
 }
 
@@ -27,12 +29,30 @@ message AttachMessage {
     repeated string programArguments = 1;
 }
 
+message GetTestsMessage {
+    // --
+}
+
+// Returned as response to GetTestsMessage
+// contains a list of all available tests
+message TestListMessage {
+    repeated TestDescriptor tests = 1;
+}
+
+message TestDescriptor {
+    string testClassName = 1;
+    string testMethodName = 2;
+    string description = 3;
+    repeated TestParameter parameters = 4;
+}
+
 // Indicates that the given test should be run
 message RunTestMessage {
     // unique identifier for this test
     string testId = 1;
     string testClassName = 2;
-    repeated TestParameter parameters = 3;
+    string testMethodName = 3;
+    repeated TestParameter parameters = 4;
 }
 
 // Aborts execution of the running test with the given id

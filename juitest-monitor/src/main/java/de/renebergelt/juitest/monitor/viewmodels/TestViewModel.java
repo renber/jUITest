@@ -31,7 +31,7 @@ public class TestViewModel extends ViewModelBase {
     }
 
     public String getName() {
-        return model.getName();
+        return model.getDescription();
     }
 
     String errorText = "";

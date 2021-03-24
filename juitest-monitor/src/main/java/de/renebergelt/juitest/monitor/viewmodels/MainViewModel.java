@@ -2,12 +2,14 @@ package de.renebergelt.juitest.monitor.viewmodels;
 
 import de.renber.quiterables.QuIterables;
 import de.renber.quiterables.Queriable;
+import de.renber.quiterables.grouping.Group;
+import de.renber.quiterables.grouping.GroupedQueriable;
+import de.renebergelt.juitest.core.TestDescriptor;
 import de.renebergelt.juitest.core.TestSet;
 import de.renebergelt.juitest.monitor.config.TestMonitorConfiguration;
 import de.renebergelt.juitest.monitor.services.DialogService;
 import de.renebergelt.juitest.monitor.utils.ObservableListHelper;
 import de.renebergelt.juitest.core.services.TestStatusListener;
-import de.renebergelt.juitest.monitor.testsetdefinition.TestSetDefinitionReader;
 import de.renebergelt.juitest.core.services.TestRunnerService;
 import de.renebergelt.juitest.core.utils.NullGuard;
 import org.jdesktop.observablecollections.ObservableList;
@@ -154,8 +156,7 @@ public class MainViewModel extends ViewModelBase {
 
         // register the logger which collects log messages during a script's execution
         //LogService.registerLogger(new AutomationLogger(() -> currentlyRunningTest.get()));
-
-        loadTestSets();
+        //loadTestSets();
 
         if (getTestSets().size() > 0) {
             setSelectedTestSet(getTestSets().get(0));
@@ -203,11 +204,10 @@ public class MainViewModel extends ViewModelBase {
 
         reloadTestCasesCommand = new RelayCommand( () -> {
             loadTestSets();
-        }, () -> !running);
+        }, () -> isAttached() && !running);
     }
 
     private void loadTestSets() {
-
         // save  selection of set and tests
         String formerSelectedSet = selectedTestSet != null ? selectedTestSet.getName() : null;
         Set<String> formerSelectedTests = QuIterables.query(selectedTests).select(x -> x.getName()).toSet();
@@ -215,18 +215,20 @@ public class MainViewModel extends ViewModelBase {
         selectedTests.clear();
         testSets.clear();
 
-        List<TestSet> sets;
+        List<TestDescriptor> availableTests = null;
 
         try {
-            TestSetDefinitionReader reader = new TestSetDefinitionReader();
-            sets = reader.readFromFile("test-files/test-cases.yaml");
+            // test cases are directly requested from the TestRunner instance
+            availableTests = testRunner.discoverTests();
         } catch (Exception e) {
-            dialogService.showErrorMessage(i18n.tr("Could not load test cases from file '{0}'.\nError message: {1}", "test-files/test-cases.yaml", e.getMessage()));
+            dialogService.showErrorMessage("Unable to retrieve available test cases from TestRunner instance");
             return;
         }
 
-        for (TestSet set: sets) {
-            testSets.add(new TestSetViewModel(set));
+        for(Group<TestDescriptor> g: QuIterables.query(availableTests).groupSingle(x -> x.getTestClassName())) {
+            TestSet newTestSet = new TestSet(g.getKey().first().toString());
+            newTestSet.getTests().addAll(g);
+            testSets.add(new TestSetViewModel(newTestSet));
         }
 
         // add <All Tests>
@@ -334,6 +336,9 @@ public class MainViewModel extends ViewModelBase {
 
         Thread t = new Thread(() -> {
             __attach();
+            if (isAttached() && testSets.isEmpty()) {
+                SwingUtilities.invokeLater(() -> loadTestSets());
+            }
         });
         t.start();
     }
