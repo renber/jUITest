@@ -225,7 +225,7 @@ public class MainViewModel extends ViewModelBase {
             return;
         }
 
-        for(Group<TestDescriptor> g: QuIterables.query(availableTests).groupSingle(x -> x.getTestClassName())) {
+        for(Group<TestDescriptor> g: QuIterables.query(availableTests).groupSingle(x -> x.getTestSetName())) {
             TestSet newTestSet = new TestSet(g.getKey().first().toString());
             newTestSet.getTests().addAll(g);
             testSets.add(new TestSetViewModel(newTestSet));

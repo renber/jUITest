@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
-@UITestClass
+@UITestClass(testSetName = "Test summation")
 public class CalculatorAddTest extends CalculatorAutomationTest {
 
     @UITest(description="Sum of 25 and 13")

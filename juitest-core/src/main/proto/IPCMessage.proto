@@ -42,8 +42,9 @@ message TestListMessage {
 message TestDescriptor {
     string testClassName = 1;
     string testMethodName = 2;
-    string description = 3;
-    repeated TestParameter parameters = 4;
+    string testSetName = 3;
+    string description = 4;
+    repeated TestParameter parameters = 5;
 }
 
 // Indicates that the given test should be run

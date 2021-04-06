@@ -6,9 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marker interface for classes which contain UiTests
+ * Can be added to UiAutomationTest classes to provide
+ * additional information
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface UITestClass {
+
+    String testSetName() default "";
+
 }

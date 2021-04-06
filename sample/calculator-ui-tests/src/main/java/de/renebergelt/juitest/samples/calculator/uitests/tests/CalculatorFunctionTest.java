@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
-@UITestClass
+@UITestClass(testSetName = "Test other functions")
 public class CalculatorFunctionTest extends CalculatorAutomationTest {
 
     @UITest

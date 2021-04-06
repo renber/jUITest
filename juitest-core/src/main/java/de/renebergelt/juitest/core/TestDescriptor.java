@@ -44,6 +44,19 @@ public class TestDescriptor {
 
     private String testClassName;
 
+    private String testSetName;
+
+    public String getTestSetName() {
+        if (testSetName == null || testSetName.isEmpty()) {
+            return testClassName;
+        }
+        return testSetName;
+    }
+
+    public void setTestSetName(String testSetName) {
+        this.testSetName = testSetName;
+    }
+
     Object[] namedParameters;
 
     public Object[] getParameters() {

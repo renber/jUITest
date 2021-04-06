@@ -2,6 +2,7 @@ package de.renebergelt.juitest.host.services;
 
 import de.renber.quiterables.QuIterables;
 import de.renebergelt.juitest.core.annotations.UITest;
+import de.renebergelt.juitest.core.annotations.UITestClass;
 import de.renebergelt.juitest.core.annotations.parameterfunctions.TestParameterResolver;
 import de.renebergelt.juitest.host.testscripts.UIAutomationTest;
 import de.renebergelt.juitest.core.TestDescriptor;
@@ -74,6 +75,12 @@ public class SameProcessTestRunnerService implements TestRunnerService {
 
                 UITest annot = m.getAnnotation(UITest.class);
 
+                String testSetName = null;
+                if (m.getDeclaringClass().isAnnotationPresent(UITestClass.class)) {
+                    UITestClass tc = m.getDeclaringClass().getAnnotation(UITestClass.class);
+                    testSetName = tc.testSetName();
+                }
+
                 // resolve test method parameters (if any)
                 if (paramResolver.hasParameters(m)) {
                     for (Object[] paramSet : paramResolver.resolveParameterSets(m)) {
@@ -81,12 +88,18 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                         if (annot.description() != null && !annot.description().isEmpty()) {
                             td.setDescription(annot.description());
                         }
+                        if (testSetName != null && !testSetName.isEmpty()) {
+                            td.setTestSetName(testSetName);
+                        }
                         descriptors.add(td);
                     }
                 } else {
                     TestDescriptor td = new TestDescriptor(m.getDeclaringClass().getCanonicalName(), m.getName());
                     if (annot.description() != null && !annot.description().isEmpty()) {
                         td.setDescription(annot.description());
+                    }
+                    if (testSetName != null && !testSetName.isEmpty()) {
+                        td.setTestSetName(testSetName);
                     }
                     descriptors.add(td);
                 }

@@ -39,6 +39,7 @@ public class IPCMessages {
             IPCProtocol.TestDescriptor.Builder tBuilder = IPCProtocol.TestDescriptor.newBuilder();
             tBuilder.setTestClassName(td.getTestClassName());
             tBuilder.setTestMethodName(td.getTestMethodName());
+            tBuilder.setTestSetName(td.getTestSetName());
             tBuilder.setDescription(td.getDescription());
 
             for(int i = 0; i < td.getParameters().length; i+=2) {
@@ -142,6 +143,7 @@ public class IPCMessages {
             }
 
             TestDescriptor td = new TestDescriptor(ptd.getTestClassName(), ptd.getTestMethodName(), parameters.toArray());
+            td.setTestSetName(ptd.getTestSetName());
             td.setDescription(ptd.getDescription());
             rList.add(td);
         }
