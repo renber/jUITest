@@ -1,4 +1,4 @@
-import de.renebergelt.juitest.core.parameterfunctions.TestDescriptionResolver;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.TestDescriptionResolver;
 import org.junit.Test;
 
 import java.util.regex.Matcher;

@@ -2,8 +2,9 @@ package de.renebergelt.juitest.samples.calculator.uitests.tests;
 
 import de.renebergelt.juitest.core.annotations.UITest;
 import de.renebergelt.juitest.core.annotations.UITestClass;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.ParameterRange;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.ParameterSet;
 import de.renebergelt.juitest.core.exceptions.UITestException;
-import de.renebergelt.juitest.samples.calculator.uitests.CalculatorAutomationHost;
 import de.renebergelt.juitest.samples.calculator.uitests.CalculatorAutomationTest;
 
 import javax.swing.*;
@@ -35,7 +36,9 @@ public class CalculatorAddTest extends CalculatorAutomationTest {
         assertFalse(addBtn.isSelected());
     }
 
-    @UITest(parameters={"operandOne", "{{set:5,10}}", "operandTwo", "{{set:26,8}}"})
+    @UITest
+    @ParameterRange(index = 0, name = "operandOne", start = 6, end = 10)
+    @ParameterSet(index = 1, name = "operandTwo", intValues = {26, 8})
     public void add_with_params(int operandOne, int operandTwo) throws CancellationException, TimeoutException, UITestException {
         inputNumber(operandOne);
         AbstractButton addBtn = findComponent(context.getFrame(), AbstractButton.class, (b) -> "+".equals(b.getText()));

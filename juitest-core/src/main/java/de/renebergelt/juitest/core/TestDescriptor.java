@@ -19,7 +19,7 @@ public class TestDescriptor {
                 sb.append(" (");
                 for(int i = 0; i < getParameters().length; i+=2) {
                     sb.append(getParameters()[i]).append(": ").append(getParameters()[i+1]);
-                    if (i < getParameters().length - 1) {
+                    if (i < getParameters().length - 2) {
                         sb.append(", ");
                     }
                 }

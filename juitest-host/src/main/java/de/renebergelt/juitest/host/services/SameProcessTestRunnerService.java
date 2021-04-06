@@ -2,7 +2,7 @@ package de.renebergelt.juitest.host.services;
 
 import de.renber.quiterables.QuIterables;
 import de.renebergelt.juitest.core.annotations.UITest;
-import de.renebergelt.juitest.core.parameterfunctions.ParameterFunctionResolver;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.TestParameterResolver;
 import de.renebergelt.juitest.host.testscripts.UIAutomationTest;
 import de.renebergelt.juitest.core.TestDescriptor;
 import de.renebergelt.juitest.core.comm.IPCMessages;
@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
@@ -62,7 +61,7 @@ public class SameProcessTestRunnerService implements TestRunnerService {
         System.out.println("Discovering tests using Reflections");
         List<TestDescriptor> descriptors = new ArrayList<>();
 
-        ParameterFunctionResolver paramResolver = new ParameterFunctionResolver();
+        TestParameterResolver paramResolver = new TestParameterResolver();
 
         // Find all methods which are annotated with UiTest
         Reflections ref = new Reflections(testBasePackage, new MethodAnnotationsScanner());
@@ -73,17 +72,11 @@ public class SameProcessTestRunnerService implements TestRunnerService {
             if (isTestClass) {
                 System.out.println(m.getDeclaringClass().getSimpleName() + "." + m.getName());
 
-                // any parameters?
                 UITest annot = m.getAnnotation(UITest.class);
 
-                // default content is ""
-                if (annot.parameters().length % 2 != 0) {
-                    System.out.println("The test parameter definition of method " + m.getDeclaringClass().getSimpleName() + "." + m.getName() + " is invalid.");
-                    continue;
-                }
-
-                if (annot.parameters().length > 0) {
-                    for(Object[] paramSet: paramResolver.resolveParameterSets(annot.parameters())) {
+                // resolve test method parameters (if any)
+                if (paramResolver.hasParameters(m)) {
+                    for (Object[] paramSet : paramResolver.resolveParameterSets(m)) {
                         TestDescriptor td = new TestDescriptor(m.getDeclaringClass().getCanonicalName(), m.getName(), paramSet);
                         if (annot.description() != null && !annot.description().isEmpty()) {
                             td.setDescription(annot.description());
@@ -97,7 +90,6 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                     }
                     descriptors.add(td);
                 }
-
             } else {
                 System.out.println("Class " + m.getDeclaringClass().getCanonicalName() + " contains UITest methods but has not been derived from class UIAutomationTest");
             }
@@ -244,10 +236,13 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                     for(Method m: availableMethods) {
                         UITest annot = m.getAnnotation(UITest.class);
                         // check if the parameters match
-                        if (annot.parameters().length == testDescriptor.getParameters().length) {
+                        TestParameterResolver resolver = new TestParameterResolver();
+                        List<String> paramNames = resolver.getDeclaredParameterNames(m);
+
+                        if (paramNames.size() == testDescriptor.getParameters().length / 2) {
                             boolean namesMatch = true;
-                            for(int nameIdx = 0; nameIdx < annot.parameters().length; nameIdx += 2) {
-                                if (!annot.parameters()[nameIdx].equals(testDescriptor.getParameters()[nameIdx])) {
+                            for(int nameIdx = 0; nameIdx < paramNames.size(); nameIdx++) {
+                                if (!paramNames.get(nameIdx).equals(testDescriptor.getParameters()[nameIdx*2])) {
                                     namesMatch = false;
                                     break;
                                 }

@@ -1,4 +1,4 @@
-package de.renebergelt.juitest.core.parameterfunctions;
+package de.renebergelt.juitest.core.annotations.parameterfunctions;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
