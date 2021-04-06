@@ -11,7 +11,7 @@ This has the following advantages:
 * Hot-swap support: You can make changes to both tests and the application and hot swap them.
 
 Of course, there are also possible disadvantages:
-* Tests might are coupled to the UI (but this is true for all UI testing frameworks)
+* Tests are coupled to the UI (but this is true for all UI testing frameworks)
 * Since jUITest does (currently) not invoke a new instance of the application, tests might interfere with each other if application state is not correctly reverted between tests
 
 jUITest provides a TestMonitor application which runs as a separate process.
