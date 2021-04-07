@@ -1,17 +1,17 @@
 package de.renebergelt.juitest.core.annotations.parameterfunctions;
 
+import de.renebergelt.juitest.core.annotations.TestParameterContainer;
 import de.renebergelt.juitest.core.annotations.TestParameterMarker;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.containers.ParameterSetContainer;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Repeatable(ParameterSetContainer.class)
 @TestParameterMarker(evaluationClass = ParameterSetEvaluationFunc.class)
 public @interface ParameterSet {
     int index();

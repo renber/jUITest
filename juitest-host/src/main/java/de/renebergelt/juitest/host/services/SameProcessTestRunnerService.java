@@ -3,6 +3,7 @@ package de.renebergelt.juitest.host.services;
 import de.renber.quiterables.QuIterables;
 import de.renebergelt.juitest.core.annotations.UITest;
 import de.renebergelt.juitest.core.annotations.UITestClass;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.TestDescriptionResolver;
 import de.renebergelt.juitest.core.annotations.parameterfunctions.TestParameterResolver;
 import de.renebergelt.juitest.host.testscripts.UIAutomationTest;
 import de.renebergelt.juitest.core.TestDescriptor;
@@ -63,6 +64,7 @@ public class SameProcessTestRunnerService implements TestRunnerService {
         List<TestDescriptor> descriptors = new ArrayList<>();
 
         TestParameterResolver paramResolver = new TestParameterResolver();
+        TestDescriptionResolver testDescrResolver = new TestDescriptionResolver();
 
         // Find all methods which are annotated with UiTest
         Reflections ref = new Reflections(testBasePackage, new MethodAnnotationsScanner());
@@ -86,7 +88,7 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                     for (Object[] paramSet : paramResolver.resolveParameterSets(m)) {
                         TestDescriptor td = new TestDescriptor(m.getDeclaringClass().getCanonicalName(), m.getName(), paramSet);
                         if (annot.description() != null && !annot.description().isEmpty()) {
-                            td.setDescription(annot.description());
+                            td.setDescription(testDescrResolver.resolve(annot.description(), paramSet));
                         }
                         if (testSetName != null && !testSetName.isEmpty()) {
                             td.setTestSetName(testSetName);

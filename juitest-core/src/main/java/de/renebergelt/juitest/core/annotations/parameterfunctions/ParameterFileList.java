@@ -1,19 +1,19 @@
 package de.renebergelt.juitest.core.annotations.parameterfunctions;
 
 import de.renebergelt.juitest.core.annotations.TestParameterMarker;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.containers.ParameterFileListContainer;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.containers.ParameterSetContainer;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Repeatable(ParameterFileListContainer.class)
 @TestParameterMarker(evaluationClass = ParameterFileListEvaluationFunc.class)
 public @interface ParameterFileList {
     int index();
@@ -30,7 +30,6 @@ class ParameterFileListEvaluationFunc implements TestParameterEvaluationFunc<Par
 
         String path = parameterAnnotation.path();
         String filemask = parameterAnnotation.filemask();
-
 
         List<Object> filenames = new ArrayList<>();
 

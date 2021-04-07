@@ -1,5 +1,6 @@
 package de.renebergelt.juitest.core.annotations.parameterfunctions;
 
+import de.renebergelt.juitest.core.annotations.TestParameterContainer;
 import de.renebergelt.juitest.core.annotations.TestParameterMarker;
 
 import java.lang.annotation.Annotation;
@@ -29,19 +30,36 @@ public class TestParameterResolver {
     }
 
     public List<String> getDeclaredParameterNames(Method uiTestMethod) {
-        List<Annotation> parameters = Arrays.stream(uiTestMethod.getAnnotations()).filter(x -> x.annotationType().isAnnotationPresent(TestParameterMarker.class)).collect(Collectors.toList());
+        List<Annotation> parameters = getParameters(uiTestMethod);
         parameters.sort(Comparator.comparing(this::getParameterIndex));
         return parameters.stream().map(x -> getParameterName(x)).collect(Collectors.toList());
     }
 
     public boolean hasParameters(Method uiTestMethod) {
-        return Arrays.stream(uiTestMethod.getAnnotations()).anyMatch(x -> x.annotationType().isAnnotationPresent(TestParameterMarker.class));
+        return Arrays.stream(uiTestMethod.getAnnotations()).anyMatch(x -> x.annotationType().isAnnotationPresent(TestParameterContainer.class) || x.annotationType().isAnnotationPresent(TestParameterMarker.class));
+    }
+
+    private List<Annotation> unrollParameterContainer(Annotation containerAnnotation) {
+        try {
+            return (List)Arrays.asList(containerAnnotation.annotationType().getMethod("value").invoke(containerAnnotation), new Annotation[0]);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Annotation> getParameters(Method uiTestMethod) {
+        // get all annotations which are marked with TestParameterMarker
+        List<Annotation> alist = new ArrayList<>();
+        alist.addAll(Arrays.stream(uiTestMethod.getAnnotations()).filter(x -> x.annotationType().isAnnotationPresent(TestParameterMarker.class)).collect(Collectors.toList()));
+        // and "unroll" all TestParameterContainer annotations
+        alist.addAll(Arrays.stream(uiTestMethod.getAnnotations()).filter(x -> x.annotationType().isAnnotationPresent(TestParameterContainer.class)).map(x -> unrollParameterContainer(x)).flatMap(List::stream).collect(Collectors.toList()));
+        return alist;
     }
 
     public List<Object[]> resolveParameterSets(Method uiTestMethod) {
 
         // get all annotations of the methods which have a TestParameter annotation
-        List<Annotation> parameters = Arrays.stream(uiTestMethod.getAnnotations()).filter(x -> x.annotationType().isAnnotationPresent(TestParameterMarker.class)).collect(Collectors.toList());
+        List<Annotation> parameters = getParameters(uiTestMethod);
         parameters.sort(Comparator.comparing(this::getParameterIndex));
 
         List<String> pnames = parameters.stream().map(x -> getParameterName(x)).collect(Collectors.toList());

@@ -1,6 +1,8 @@
 package de.renebergelt.juitest.core.annotations.parameterfunctions;
 
 import de.renebergelt.juitest.core.annotations.TestParameterMarker;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.containers.ParameterFileListContainer;
+import de.renebergelt.juitest.core.annotations.parameterfunctions.containers.ParameterRangeContainer;
 
 import java.lang.annotation.*;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.List;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Repeatable(ParameterRangeContainer.class)
 @TestParameterMarker(evaluationClass = ParameterRangeEvaluationFunc.class)
 public @interface ParameterRange {
     int index();
