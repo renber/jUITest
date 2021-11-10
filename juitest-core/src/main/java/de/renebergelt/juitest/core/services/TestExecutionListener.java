@@ -9,4 +9,8 @@ public interface TestExecutionListener {
 
     void testPaused(String message);
 
+    void testFailed(Throwable error);
+
+    void testSucceeded();
+
 }

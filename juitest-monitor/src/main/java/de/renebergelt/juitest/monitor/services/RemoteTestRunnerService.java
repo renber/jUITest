@@ -83,20 +83,15 @@ public class RemoteTestRunnerService implements TestRunnerService, IPCMessageLis
             throw new IllegalStateException("Test monitor not attached");
 
         IPCProtocol.IPCMessage result = client.send(IPCMessages.createRunTestMessage(testDescriptor.getTestClassName(), testDescriptor.getTestMethodName(), testDescriptor.getParameters()));
-        if (result.hasTestResult()) {
-            switch (result.getTestResult().getResult()) {
-                case SUCCESS:
+        if (result.hasTestStatus()) {
+            switch (result.getTestStatus().getStatus()) {
+                case RUNNING:
                     return;
-                case FAILURE:
-                    throw new UITestException(result.getTestResult().getErrorDescription());
-                case CANCELED:
-                    throw new CancellationException(result.getTestResult().getErrorDescription());
-                case TIMEOUT:
-                    throw new TimeoutException(result.getTestResult().getErrorDescription());
-                default:
-                    // connection timed-out?
-                    throw new TimeoutException("No response from test host");
+                case FAILED_TO_START:
+                    throw new UITestException("Failed to run test: " + result.getTestStatus().getMessage());
             }
+        } else {
+            throw new RuntimeException("No response from host");
         }
     }
 
@@ -125,19 +120,45 @@ public class RemoteTestRunnerService implements TestRunnerService, IPCMessageLis
 
     @Override
     public boolean onMessageReceived(IPCProtocol.IPCMessage message) {
-        if (message.hasTestLog()) {
-            // remove log messages from the normal flow
+        // handle messages which are not send as response to a request
+
+       if (message.hasTestLog()) {
             for(TestStatusListener listener: testStatusListeners) {
                 listener.onLogMessageReceived(message.getTestLog().getText());
             }
             return true;
         }
 
-        if (message.hasTestPaused()) {
-            // remove test paused messages from the normal flow
-            for(TestStatusListener listener: testStatusListeners) {
-                listener.onTestExecutionPaused(message.getTestPaused().getMessage());
+        if (message.hasTestStatus()) {
+            // only handle pause
+            if (message.getTestStatus().getStatus() == IPCProtocol.TestStatus.PAUSED) {
+                for(TestStatusListener listener: testStatusListeners) {
+                        listener.onTestExecutionPaused(message.getTestStatus().getMessage());
+                }
             }
+            return false;
+        }
+
+        if (message.hasTestResult()) {
+            String testId = message.getTestResult().getTestId();
+
+            for(TestStatusListener listener: testStatusListeners) {
+                switch (message.getTestResult().getResult()) {
+                    case SUCCESS:
+                        listener.onTestSucceeded(testId);
+                        break;
+                    case TIMEOUT:
+                        listener.onTestTimedout(testId);
+                        break;
+                    case CANCELLED:
+                        listener.onTestCancelledByUser(testId);
+                        break;
+                    case FAILURE:
+                        listener.onTestFailed(testId, message.getTestResult().getErrorDescription());
+                        break;
+                }
+            }
+
             return true;
         }
 

@@ -12,9 +12,9 @@ message IPCMessage {
         RunTestMessage runTest = 4;
         CancelTestMessage cancelTest = 5;
         TestListMessage testList = 6;
-        TestResultMessage testResult = 7;
-        TestLogMessage testLog = 8;
-        TestPausedMessage testPaused = 9;
+        TestStatusMessage testStatus = 7;
+        TestResultMessage testResult = 8;
+        TestLogMessage testLog = 9;
         ResumeTestMessage resumeTest = 10;
     };
 }
@@ -29,6 +29,7 @@ message AttachMessage {
     repeated string programArguments = 1;
 }
 
+// Request a list of all available tests
 message GetTestsMessage {
     // --
 }
@@ -39,6 +40,7 @@ message TestListMessage {
     repeated TestDescriptor tests = 1;
 }
 
+// Describes a single test case
 message TestDescriptor {
     string testClassName = 1;
     string testMethodName = 2;
@@ -70,16 +72,17 @@ message TestResultMessage {
     string errorDescription = 3;
 }
 
-// contains a log message from a text
+// contains a log message from a test
 message TestLogMessage {
     string testId = 1;
     string text = 2;
 }
 
-// message which indicates that test execution has been paused
-message TestPausedMessage {
+// contains information on the current status of a test
+message TestStatusMessage {
     string testId = 1;
-    string message = 2;
+    TestStatus status = 2;
+    string message = 3;
 }
 
 // message which indicates that a paused test should be continued
@@ -107,5 +110,13 @@ enum TestResult {
     SUCCESS = 0;
     FAILURE = 1;
     TIMEOUT = 2;
-    CANCELED = 3;
+    CANCELLED = 3;
+}
+
+enum TestStatus {
+    IDLE = 0;
+    RUNNING = 1;
+    PAUSED = 2;
+    FAILED_TO_START = 3;
+    FAILED_TO_RESUME = 4;
 }

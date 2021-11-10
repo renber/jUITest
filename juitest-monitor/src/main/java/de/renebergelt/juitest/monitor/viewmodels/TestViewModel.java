@@ -11,8 +11,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeoutException;
 
 public class TestViewModel extends ViewModelBase {
 
@@ -109,22 +107,41 @@ public class TestViewModel extends ViewModelBase {
             startExecutionTimer();
 
             testRunner.runTest(model);
-            SwingUtilities.invokeLater(() -> setStatus(TestExecutionStatus.SUCCESS));
-        }
-        catch (CancellationException e) {
-            SwingUtilities.invokeLater(() -> {setStatus(TestExecutionStatus.CANCELED); setErrorText(e.getMessage()); } );
-        }
-        catch(TimeoutException e) {
-            SwingUtilities.invokeLater(() -> {setStatus(TestExecutionStatus.TIMEOUT); setErrorText(e.getMessage()); } );
-        }
-        catch(Exception e) {
+            SwingUtilities.invokeLater(() -> setStatus(TestExecutionStatus.RUNNING));
+        } catch(Exception e) {
             SwingUtilities.invokeLater(() -> {setStatus(TestExecutionStatus.FAILURE); setErrorText(e.getMessage() + "\n" + stackTraceToString(e)); } );
-        } finally {
-            endTime = System.currentTimeMillis();
-
-            timer.cancel();
-            updateExecutionTime();
         }
+    }
+
+    private void executionEnded() {
+        endTime = System.currentTimeMillis();
+
+        timer.cancel();
+        updateExecutionTime();
+    }
+
+    public void testSucceeded() {
+        executionEnded();
+        setStatus(TestExecutionStatus.SUCCESS);
+        setErrorText("");
+    }
+
+    public void testCancelled() {
+        executionEnded();
+        setStatus(TestExecutionStatus.CANCELLED);
+        setErrorText("Test was cancelled by user");
+    }
+
+    public void testTimedout() {
+        executionEnded();
+        setStatus(TestExecutionStatus.TIMEOUT);
+        setErrorText("");
+    }
+
+    public void testFailed(String reason) {
+        executionEnded();
+        setStatus(TestExecutionStatus.FAILURE);
+        setErrorText(reason);
     }
 
     private String stackTraceToString(Exception e) {

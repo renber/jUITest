@@ -7,6 +7,7 @@ import de.renebergelt.juitest.core.comm.messages.IPCProtocol;
 import de.renebergelt.juitest.core.exceptions.UITestException;
 import de.renebergelt.juitest.core.comm.IPCHandler;
 import de.renebergelt.juitest.core.comm.IPCMessages;
+import de.renebergelt.juitest.core.utils.StackTraceUtils;
 import de.renebergelt.juitest.host.comm.IPCServer;
 import de.renebergelt.juitest.host.services.SameProcessTestRunnerService;
 import de.renebergelt.juitest.host.testscripts.UIAutomationHost;
@@ -45,7 +46,7 @@ public class UITestRunner implements IPCHandler {
     }
 
     public void start() {
-        // run server in separate thread, so that it does not conflict with the application under tests
+        // run server in separate thread, so that it does not conflict with the application under test
         Thread t = new Thread( () -> {
             try {
                 IPCServer server = new IPCServer(host, port, this);
@@ -89,20 +90,13 @@ public class UITestRunner implements IPCHandler {
         }
 
         if (message.hasRunTest()) {
+            String testId = message.getRunTest().getTestId();
             try {
                 localTestRunner.runTest(IPCMessages.readRunTestMessage(message.getRunTest()));
-                return IPCMessages.createTestResultMessage(IPCProtocol.TestResult.SUCCESS, Optional.empty());
-            } catch (AssertionError e) {
-                // JUnit Error is not an exception
-                return IPCMessages.createTestResultMessage(IPCProtocol.TestResult.FAILURE, Optional.of(stackTraceToString(e)));
-            } catch (TimeoutException e) {
-                return IPCMessages.createTestResultMessage(IPCProtocol.TestResult.TIMEOUT, Optional.empty());
-            } catch (CancellationException e) {
-                return IPCMessages.createTestResultMessage(IPCProtocol.TestResult.CANCELED, Optional.empty());
-            } catch (UITestException e) {
-                return IPCMessages.createTestResultMessage(IPCProtocol.TestResult.FAILURE, Optional.of(stackTraceToString(e)));
-            } catch (Throwable e) { // handle generic Exception or Error
-                return IPCMessages.createTestResultMessage(IPCProtocol.TestResult.FAILURE, Optional.of(stackTraceToString(e)));
+                // runTest returns immediately, test is running in the background
+                return IPCMessages.createTestStartedMessage(testId);
+            } catch (Exception e) {
+                return IPCMessages.createTestFailedToStartMessage(testId, StackTraceUtils.stackTraceToString(e));
             }
         }
 
@@ -117,12 +111,5 @@ public class UITestRunner implements IPCHandler {
         }
 
         return null;
-    }
-
-    private String stackTraceToString(Throwable e) {
-        StringWriter writer = new StringWriter();
-        PrintWriter printWriter= new PrintWriter(writer);
-        e.printStackTrace(printWriter);
-        return  writer.toString();
     }
 }

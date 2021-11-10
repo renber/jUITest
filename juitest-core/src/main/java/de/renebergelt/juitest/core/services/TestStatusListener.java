@@ -4,9 +4,16 @@ public interface TestStatusListener {
 
     void onTestExecutionPaused(String message);
 
+    void onTestSucceeded(String testId);
+
+    void onTestFailed(String testId, String reason);
+
+    void onTestTimedout(String testId);
+
+    void onTestCancelledByUser(String testId);
+
     /**
-     * Called when a log message has been received (which is an out-of-turn message as it does not need
-     * to be requested)
+     * Called when a log message has been received
      */
     void onLogMessageReceived(String message);
 

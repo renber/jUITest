@@ -209,14 +209,27 @@ public class IPCMessages {
         return builder.setTestLog(logBuilder).build();
     }
 
-    public static IPCProtocol.IPCMessage createTestPausedMessage(String testId, String message) {
+    private static IPCProtocol.IPCMessage createTestStatusMessage(String testId, String message, IPCProtocol.TestStatus status) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 
-        IPCProtocol.TestPausedMessage.Builder pausedBuilder = IPCProtocol.TestPausedMessage.newBuilder();
-        pausedBuilder.setTestId(testId);
-        pausedBuilder.setMessage(message);
+        IPCProtocol.TestStatusMessage.Builder statusBuilder = IPCProtocol.TestStatusMessage.newBuilder();
+        statusBuilder.setTestId(testId);
+        statusBuilder.setStatus(status);
+        statusBuilder.setMessage(message);
 
-        return builder.setTestPaused(pausedBuilder).build();
+        return builder.setTestStatus(statusBuilder).build();
+    }
+
+    public static IPCProtocol.IPCMessage createTestStartedMessage(String testId) {
+        return createTestStatusMessage(testId, "", IPCProtocol.TestStatus.RUNNING);
+    }
+
+    public static IPCProtocol.IPCMessage createTestFailedToStartMessage(String testId, String message) {
+        return createTestStatusMessage(testId, message, IPCProtocol.TestStatus.FAILED_TO_START);
+    }
+
+    public static IPCProtocol.IPCMessage createTestPausedMessage(String testId, String message) {
+        return createTestStatusMessage(testId, message, IPCProtocol.TestStatus.PAUSED);
     }
 
     public static IPCProtocol.IPCMessage createResumeTestMessage(String testId) {

@@ -9,7 +9,7 @@ public enum TestExecutionStatus {
     SUCCESS,
     FAILURE,
     TIMEOUT,
-    CANCELED;
+    CANCELLED;
 
     Color successColor = new Color(52, 123, 49);
     Color failedColor = new Color(201, 67, 17);
@@ -22,7 +22,7 @@ public enum TestExecutionStatus {
             case SUCCESS: return successColor;
             case FAILURE: return failedColor;
             case TIMEOUT: return Color.orange;
-            case CANCELED: return Color.gray;
+            case CANCELLED: return Color.gray;
 
             default:
                 throw new IllegalArgumentException("status");

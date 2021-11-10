@@ -30,7 +30,7 @@ public class TestExecutionStatusTableCellRenderer extends DefaultTableCellRender
             case SUCCESS: return i18n.tr("SUCCESS");
             case FAILURE: return i18n.tr("FAILURE");
             case TIMEOUT: return i18n.tr("TIMEOUT");
-            case CANCELED: return i18n.tr("CANCELLED");
+            case CANCELLED: return i18n.tr("CANCELLED");
 
             default:
                 throw new IllegalArgumentException("status");

@@ -3,7 +3,6 @@ package de.renebergelt.juitest.monitor.viewmodels;
 import de.renber.quiterables.QuIterables;
 import de.renber.quiterables.Queriable;
 import de.renber.quiterables.grouping.Group;
-import de.renber.quiterables.grouping.GroupedQueriable;
 import de.renebergelt.juitest.core.TestDescriptor;
 import de.renebergelt.juitest.core.TestSet;
 import de.renebergelt.juitest.monitor.config.TestMonitorConfiguration;
@@ -127,6 +126,50 @@ public class MainViewModel extends ViewModelBase {
 
                     testRunner.resumeTest();
                 });
+            }
+
+            @Override
+            public void onTestSucceeded(String testId) {
+                TestViewModel svm = currentlyRunningTest.get();
+
+                if (svm != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        svm.testSucceeded();
+                    });
+                }
+            }
+
+            @Override
+            public void onTestFailed(String testId, String reason) {
+                TestViewModel svm = currentlyRunningTest.get();
+
+                if (svm != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        svm.testFailed(reason);
+                    });
+                }
+            }
+
+            @Override
+            public void onTestTimedout(String testId) {
+                TestViewModel svm = currentlyRunningTest.get();
+
+                if (svm != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        svm.testTimedout();
+                    });
+                }
+            }
+
+            @Override
+            public void onTestCancelledByUser(String testId) {
+                TestViewModel svm = currentlyRunningTest.get();
+
+                if (svm != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        svm.testCancelled();
+                    });
+                }
             }
 
             @Override
@@ -259,7 +302,7 @@ public class MainViewModel extends ViewModelBase {
     public int[] getTestStatus() {
         Queriable<TestViewModel> qscripts = QuIterables.query(tests);
         int succeeded = qscripts.count(x -> x.getStatus() == TestExecutionStatus.SUCCESS);
-        int failed = qscripts.count(x -> x.getStatus() == TestExecutionStatus.FAILURE || x.getStatus() == TestExecutionStatus.CANCELED || x.getStatus() == TestExecutionStatus.TIMEOUT);
+        int failed = qscripts.count(x -> x.getStatus() == TestExecutionStatus.FAILURE || x.getStatus() == TestExecutionStatus.CANCELLED || x.getStatus() == TestExecutionStatus.TIMEOUT);
         int waiting = qscripts.count(x -> x.getStatus() == TestExecutionStatus.WAITING);
 
         return new int[]{succeeded, failed, waiting};
@@ -301,10 +344,19 @@ public class MainViewModel extends ViewModelBase {
 
                 for (TestViewModel test : testList) {
                     if (isStopRequested) {
-                        SwingUtilities.invokeLater(() -> test.setStatus(TestExecutionStatus.CANCELED));
+                        SwingUtilities.invokeLater(() -> test.setStatus(TestExecutionStatus.CANCELLED));
                     } else {
                         currentlyRunningTest.set(test);
                         test.run(testRunner);
+
+                        // TODO: use event
+                        while (test.getStatus() == TestExecutionStatus.RUNNING) {
+                            try {
+                                Thread.sleep(250);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
 
                     notifyTestStatusChanged();
@@ -387,7 +439,7 @@ public class MainViewModel extends ViewModelBase {
             testRunnerThread = null;
 
             if (svm != null) {
-                svm.setStatus(TestExecutionStatus.CANCELED);
+                svm.setStatus(TestExecutionStatus.CANCELLED);
             }
 
             isStopRequested = true;

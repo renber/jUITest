@@ -5,6 +5,8 @@ import de.renebergelt.juitest.core.annotations.UITest;
 import de.renebergelt.juitest.core.annotations.UITestClass;
 import de.renebergelt.juitest.core.annotations.parameterfunctions.TestDescriptionResolver;
 import de.renebergelt.juitest.core.annotations.parameterfunctions.TestParameterResolver;
+import de.renebergelt.juitest.core.comm.messages.IPCProtocol;
+import de.renebergelt.juitest.core.utils.StackTraceUtils;
 import de.renebergelt.juitest.host.testscripts.UIAutomationTest;
 import de.renebergelt.juitest.core.TestDescriptor;
 import de.renebergelt.juitest.core.comm.IPCMessages;
@@ -18,11 +20,14 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 
 import javax.swing.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
@@ -173,15 +178,38 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                     transmitter.sendMessage(IPCMessages.createTestPausedMessage("", message));
                 }
             }
+
+            private void cleanup() {
+                currentRunningTest.set(null);
+                automationHost.cleanup_after_test();
+            }
+
+            @Override
+            public void testFailed(Throwable error) {
+                cleanup();
+
+                if (transmitter != null) {
+                    if (error instanceof TimeoutException) {
+                        transmitter.sendMessage(IPCMessages.createTestResultMessage(IPCProtocol.TestResult.TIMEOUT, Optional.empty()));
+                    } else if (error instanceof  CancellationException) {
+                        transmitter.sendMessage(IPCMessages.createTestResultMessage(IPCProtocol.TestResult.CANCELLED, Optional.empty()));
+                    } else {
+                        transmitter.sendMessage(IPCMessages.createTestResultMessage(IPCProtocol.TestResult.FAILURE, Optional.of(StackTraceUtils.stackTraceToString(error))));
+                    }
+                }
+            }
+
+            @Override
+            public void testSucceeded() {
+                cleanup();
+
+                if (transmitter != null) {
+                    transmitter.sendMessage(IPCMessages.createTestResultMessage(IPCProtocol.TestResult.SUCCESS, Optional.empty()));
+                }
+            }
         });
 
-        try {
-            aThread.runAndWait();
-        } finally {
-            currentRunningTest.set(null);
-
-            automationHost.cleanup_after_test();
-        }
+        aThread.runAsync();
     }
 
     @Override
@@ -228,8 +256,12 @@ public class SameProcessTestRunnerService implements TestRunnerService {
         private Runnable threadBody;
         private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
         private AtomicReference<Throwable> failException = new AtomicReference<>(null);
+        AtomicReference<Thread.UncaughtExceptionHandler> oldUncaughtExceptionHandler;
+
+        TestExecutionListener executionListener;
 
         public void setExecutionListener(TestExecutionListener executionListener) {
+            this.executionListener = executionListener;
             test.setExecutionListener(executionListener);
         }
 
@@ -298,6 +330,8 @@ public class SameProcessTestRunnerService implements TestRunnerService {
 
                         return v;
                     });
+                } finally {
+                    testEnded();
                 }
             };
 
@@ -312,15 +346,17 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                 });
                 thread.interrupt();
             };
+
             thread = new Thread(threadBody);
         }
 
-        private void runAndWait() throws TimeoutException, UITestException, CancellationException {
+        private void runAsync() throws TimeoutException, UITestException, CancellationException {
 
             // register the UncaughtExceptionHandler so that we can fail the test
             // if an uncaught exception occurs
 
-            AtomicReference<Thread.UncaughtExceptionHandler> oldUncaughtExceptionHandler = new AtomicReference<>();
+            // TODO
+            oldUncaughtExceptionHandler = new AtomicReference<>();
             try {
                 SwingUtilities.invokeAndWait( () -> {
                     oldUncaughtExceptionHandler.set(Thread.getDefaultUncaughtExceptionHandler());
@@ -331,36 +367,39 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                 System.out.println("Could not set UncaughtExceptionHandler");
             }
 
+            thread.start();
+        }
+
+        private void testEnded() {
             try {
-                thread.start();
-                thread.join(); // TODO: pass test timeout in milliseconds
-            } catch (InterruptedException e) {
-                throw new CancellationException();
-            } finally {
-                try {
-                    SwingUtilities.invokeAndWait( () -> Thread.setDefaultUncaughtExceptionHandler(oldUncaughtExceptionHandler.get()));
-                } catch (Exception e) {
-                    // TODO: log error
-                    System.out.println("Could not reset UncaughtExceptionHandler");
-                }
+                SwingUtilities.invokeAndWait( () -> Thread.setDefaultUncaughtExceptionHandler(oldUncaughtExceptionHandler.get()));
+            } catch (Exception e) {
+                // TODO: log error
+                System.out.println("Could not reset UncaughtExceptionHandler");
             }
 
-            // unpack the exception
             Throwable t = failException.get();
-
-            if (t != null) {
-                // pass-through knows exceptions as is
-                if (t instanceof  TimeoutException) throw (TimeoutException)t;
-                if (t instanceof UITestException) throw (UITestException)t;
-
-                if (t instanceof Error) throw (Error)t;
-
-                // do not wrap RuntimeExceptions in another RuntimeException
-                if (t instanceof RuntimeException) throw (RuntimeException)t;
-
-                // throw unchecked
-                throw new RuntimeException(t);
+            if (t == null) {
+                executionListener.testSucceeded();
+            } else {
+                executionListener.testFailed(unnpackException(t));
             }
+        }
+
+        private Throwable unnpackException(Throwable t) {
+            if (t == null) return null;
+
+            // pass-through knows exceptions as is
+            if (t instanceof TimeoutException) return (TimeoutException) t;
+            if (t instanceof UITestException) return (UITestException) t;
+
+            if (t instanceof Error) return (Error) t;
+
+            // do not wrap RuntimeExceptions in another RuntimeException
+            if (t instanceof RuntimeException) return (RuntimeException) t;
+
+            // throw unchecked
+            return new RuntimeException(t);
         }
 
         /**
