@@ -39,9 +39,9 @@ public class TestParameterResolver {
         return Arrays.stream(uiTestMethod.getAnnotations()).anyMatch(x -> x.annotationType().isAnnotationPresent(TestParameterContainer.class) || x.annotationType().isAnnotationPresent(TestParameterMarker.class));
     }
 
-    private List<Annotation> unrollParameterContainer(Annotation containerAnnotation) {
+    public List<Annotation> unrollParameterContainer(Annotation containerAnnotation) {
         try {
-            return (List)Arrays.asList(containerAnnotation.annotationType().getMethod("value").invoke(containerAnnotation), new Annotation[0]);
+            return Arrays.asList((Annotation[])containerAnnotation.annotationType().getMethod("value").invoke(containerAnnotation));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

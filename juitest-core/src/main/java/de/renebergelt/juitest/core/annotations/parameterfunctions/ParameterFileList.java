@@ -34,8 +34,10 @@ class ParameterFileListEvaluationFunc implements TestParameterEvaluationFunc<Par
         List<Object> filenames = new ArrayList<>();
 
         File[] files = new File(path).listFiles((FilenameFilter)new WildcardFileFilter(filemask));
-        for(File f: files) {
-            filenames.add(f.getPath());
+        if (files != null) {
+            for (File f : files) {
+                filenames.add(f.getPath());
+            }
         }
 
         return filenames;

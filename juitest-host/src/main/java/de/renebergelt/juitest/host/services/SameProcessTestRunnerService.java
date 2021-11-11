@@ -389,17 +389,11 @@ public class SameProcessTestRunnerService implements TestRunnerService {
         private Throwable unnpackException(Throwable t) {
             if (t == null) return null;
 
-            // pass-through knows exceptions as is
-            if (t instanceof TimeoutException) return (TimeoutException) t;
-            if (t instanceof UITestException) return (UITestException) t;
+            if (t instanceof InvocationTargetException && t.getCause() != null) {
+                t = t.getCause();
+            }
 
-            if (t instanceof Error) return (Error) t;
-
-            // do not wrap RuntimeExceptions in another RuntimeException
-            if (t instanceof RuntimeException) return (RuntimeException) t;
-
-            // throw unchecked
-            return new RuntimeException(t);
+            return t;
         }
 
         /**
