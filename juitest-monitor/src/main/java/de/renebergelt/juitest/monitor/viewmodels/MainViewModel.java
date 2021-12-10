@@ -121,7 +121,7 @@ public class MainViewModel extends ViewModelBase {
             @Override
             public void onTestExecutionPaused(String message) {
                 SwingUtilities.invokeLater( () -> {
-                    String dlgMessage = i18n.tr("Execution of the current test has been paused with the following message:\n {0} \n\nClick OK to continue test execution.");
+                    String dlgMessage = i18n.tr("Execution of the current test has been paused with the following message:\n {0} \n\nClick OK to continue test execution.", message);
                     dialogService.showInformation(dlgMessage);
 
                     testRunner.resumeTest();
