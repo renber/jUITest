@@ -14,5 +14,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface TestParameterMarker {
 
+    /**
+     * Return the class for this TestParameter
+     * @return The class
+     */
     Class<? extends TestParameterEvaluationFunc> evaluationClass();
 }

@@ -13,6 +13,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface UITestClass {
 
+    /**
+     * Returns the name of this test set
+     * @return the name of this test set
+     */
     String testSetName() default "";
 
 }

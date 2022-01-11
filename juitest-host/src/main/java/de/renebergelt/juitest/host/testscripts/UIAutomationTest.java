@@ -108,4 +108,18 @@ public abstract class UIAutomationTest<THost extends UIAutomationHost> {
         if (!condition.get())
             throw new AutomationException("Condition not satisfied: " + failureMessage);
     }
+
+    /**
+     * Executed before every tests
+     */
+    public void beforeTest() {
+        // override in derived class
+    }
+
+    /**
+     * Executed after a test has run
+     */
+    public void afterTest() {
+        // override in derived class
+    }
 }

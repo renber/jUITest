@@ -8,5 +8,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface UITest {
+    /**
+     * Description of this test
+     * @return The description
+     */
     String description() default "";
 }

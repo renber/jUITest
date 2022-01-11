@@ -305,15 +305,21 @@ public class SameProcessTestRunnerService implements TestRunnerService {
                         throw new RuntimeException("UiTest method " + test.getClass().getCanonicalName() + "." + testDescriptor.getTestMethodName() + " is missing parameters");
                     }
 
-                    if (method.getParameterCount() == 0) {
-                        method.invoke(test);
-                    } else {
-                        // select parameter values
-                        Object[] paramValues = new Object[testDescriptor.getParameters().length / 2];
-                        for(int i = 0; i < paramValues.length; i++) {
-                            paramValues[i] = testDescriptor.getParameters()[i*2 + 1];
+                    try {
+                        test.beforeTest();
+
+                        if (method.getParameterCount() == 0) {
+                            method.invoke(test);
+                        } else {
+                            // select parameter values
+                            Object[] paramValues = new Object[testDescriptor.getParameters().length / 2];
+                            for (int i = 0; i < paramValues.length; i++) {
+                                paramValues[i] = testDescriptor.getParameters()[i * 2 + 1];
+                            }
+                            method.invoke(test, paramValues);
                         }
-                        method.invoke(test, paramValues);
+                    } finally {
+                        test.afterTest();
                     }
                 } catch (Exception e) {
                     failException.getAndUpdate( (v) -> {

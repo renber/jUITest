@@ -9,6 +9,10 @@ public class TestDescriptor {
 
     private String description;
 
+    /**
+     * Textual description if this test
+     * @return The description
+     */
     public String getDescription() {
         if (description == null || description.isEmpty()) {
             // auto-generate name from method name and parameters
@@ -32,12 +36,20 @@ public class TestDescriptor {
         return description;
     }
 
+    /**
+     * Update the description of this test
+     * @param description The new description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
     private String testMethodName;
 
+    /**
+     * Return the name of the test method
+     * @return Method name
+     */
     public String getTestMethodName() {
         return testMethodName;
     }
@@ -46,6 +58,10 @@ public class TestDescriptor {
 
     private String testSetName;
 
+    /**
+     * Return the name of the test set this test belongs to
+     * @return Name of the test set
+     */
     public String getTestSetName() {
         if (testSetName == null || testSetName.isEmpty()) {
             return testClassName;
@@ -53,20 +69,38 @@ public class TestDescriptor {
         return testSetName;
     }
 
+    /**
+     * Set the name of the test set this test belongs to
+     * @param testSetName  Name of the test set
+     */
     public void setTestSetName(String testSetName) {
         this.testSetName = testSetName;
     }
 
     Object[] namedParameters;
 
+    /**
+     * Returns the parameters of this test as tuples (Parameter name, Value), if any
+     * @return Parameters
+     */
     public Object[] getParameters() {
         return namedParameters;
     }
 
+    /**
+     * Return the class name which contains the test method
+     * @return The class name
+     */
     public String getTestClassName() {
         return testClassName;
     }
 
+    /**
+     * Create a new TestDescriptor
+     * @param testClassName Name of the class which contains the test method
+     * @param testMethodName Nam eof the test method
+     * @param namedParameters Test parameters
+     */
     public TestDescriptor(String testClassName, String testMethodName, Object...namedParameters) {
 
         if (namedParameters.length % 2 != 0) {
@@ -76,10 +110,6 @@ public class TestDescriptor {
         this.testMethodName = NullGuard.forArgument("testMethodName", testMethodName);
         this.testClassName = NullGuard.forArgument("testClassName", testClassName);
         this.namedParameters = namedParameters;
-    }
-
-    public TestDescriptor(String name, Class<?> testClass, Object...namedParameters) {
-        this(name, NullGuard.forArgument("testClass", testClass).getName(), namedParameters);
     }
 
 }
