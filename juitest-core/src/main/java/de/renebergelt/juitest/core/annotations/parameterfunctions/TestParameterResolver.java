@@ -162,8 +162,6 @@ public class TestParameterResolver {
     private List<Object> resolveParameter(Annotation parameterAnnotation) {
         TestParameterMarker tp = parameterAnnotation.annotationType().getAnnotation(TestParameterMarker.class);
 
-        List<Object> rList = new ArrayList<>();
-
         try {
             TestParameterEvaluationFunc func = tp.evaluationClass().newInstance();
             return func.eval(parameterAnnotation);
