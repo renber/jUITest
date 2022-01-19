@@ -31,6 +31,9 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Class which manages running tests in the test host's process
+ */
 public class UITestRunner implements IPCHandler {
 
     SameProcessTestRunnerService localTestRunner;
@@ -38,6 +41,13 @@ public class UITestRunner implements IPCHandler {
     private String host;
     private int port;
 
+    /**
+     * Create a new instance of UITestRunner
+     * @param host The server's host
+     * @param port The server's port
+     * @param automationHost The automation host
+     * @param testBasePackage The base package name to search for automation test classes and methods
+     */
     public UITestRunner(String host, int port, UIAutomationHost automationHost, String testBasePackage) {
         this.host = host;
         this.port = port;
@@ -45,6 +55,9 @@ public class UITestRunner implements IPCHandler {
         this.localTestRunner = new SameProcessTestRunnerService(automationHost, testBasePackage);
     }
 
+    /**
+     * Start the underlying server and wait for incoming connections from a test monitor
+     */
     public void start() {
         // run server in separate thread, so that it does not conflict with the application under test
         Thread t = new Thread( () -> {
@@ -58,6 +71,10 @@ public class UITestRunner implements IPCHandler {
         t.start();
     }
 
+    /**
+     * Return the list of available tests
+     * @return List of tests
+     */
     public List<TestDescriptor> discoverTests() {
         return localTestRunner.discoverTests();
     }

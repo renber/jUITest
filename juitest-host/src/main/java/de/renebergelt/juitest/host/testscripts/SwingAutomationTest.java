@@ -13,11 +13,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/**
+ * Base class for UIAutomationTest which test Java Swing UIs
+ * (provides swing-related helper methods)
+ * @param <THost> Type of the automation host instance
+ */
 public abstract class SwingAutomationTest<THost extends UIAutomationHost> extends UIAutomationTest<THost> {
 
     /**
      * Execute the given method in the UI thread (i.e. Swing's Event Dispatch Thread)
      * and block until the action has finished
+     * @param step The action to run
+     * @throws CancellationException Thrown if the user cancelled the execution
      */
     public void uiActionWait(Runnable step) throws CancellationException {
         try {
@@ -30,6 +37,10 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
     /**
      * Execute the given method in the UI thread (i.e. Swing's Event Dispatch Thread)
      * and block until the action has finished
+     * @param timeout The maximum wait time
+     * @param step The function to execute
+     * @throws CancellationException Thrown if the user cancelled the execution
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public void uiActionWait(Timeout timeout, Runnable step) throws CancellationException, TimeoutException {
         uiActionWait(timeout, () -> {step.run(); return true;});
@@ -38,6 +49,10 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
     /**
      * Execute the given method in the UI thread (i.e. Swing's Event Dispatch Thread)
      * and block until the action has finished
+     * @param step The function to execute
+     * @param <T> Type of the result
+     * @return THe result as produced by the step function
+     * @throws CancellationException Thrown if the user cancelled the execution
      */
     public <T> T uiActionWait(Supplier<T> step) throws CancellationException
     {
@@ -52,6 +67,12 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
     /**
      * Execute the given method, which produces a return value, in the UI thread (i.e. Swing's Event Dispatch Thread)
      * and block until the action has finished. Returns the value produced by step
+     * @param timeout The maximum wait time
+     * @param step The function to execute
+     * @param <T> Type of the result
+     * @return The result as returned by the step function
+     * @throws CancellationException Thrown if the user cancelled the execution
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public <T> T uiActionWait(Timeout timeout, Supplier<T> step) throws CancellationException, TimeoutException {
 
@@ -85,8 +106,8 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Schedules the given step in the EDT and returns immediately
-     * @param step
-     * @throws CancellationException
+     * @param step The function to execute
+     * @throws CancellationException Thrown if the user cancelled the execution
      */
     public void uiActionAsync(Runnable step) throws CancellationException {
         if (cancellationRequested)
@@ -97,9 +118,9 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Wait until the given condition is satisfied
-     * @param timeout
+     * @param timeout The maximum wait time
      * @param condition The condition check. It is not executed in the EDT!
-     * @throws TimeoutException
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public void waitForCondition(Timeout timeout, Supplier<Boolean> condition) throws TimeoutException {
         log("WAIT FOR CONDITION");
@@ -125,10 +146,12 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
     /**
      * Execute the given action which should open a window of the given class
      *
-     * @param timeout
+     * @param timeout The maximum wait time
      * @param winOpenAction Action, which should open a window of the given class
      * @param windowClass The class of the window
-     * @throws TimeoutException
+     * @param <T> The type of the wondow
+     * @return The window instance
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public <T extends java.awt.Window> T expectWindow(Timeout timeout, Runnable winOpenAction, Class<T> windowClass) throws TimeoutException {
         uiActionAsync(winOpenAction);
@@ -138,6 +161,11 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
     /**
      * Blocks until at least one window of the given class is opened
      * and returns an open instance
+     * @param timeout The maximum wait time
+     * @param <T> The window class
+     * @param windowClass The window class
+     * @return The window instance
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public <T extends java.awt.Window> T waitForWindow(Timeout timeout, Class<T> windowClass) throws TimeoutException {
         log("WAIT FOR WINDOW " + windowClass.toString());
@@ -146,6 +174,9 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Wait until the given window has been closed
+     * @param timeout The maximum wait time
+     * @param window The window instance
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public void waitUntilWindowIsClosed(Timeout timeout, Window window) throws TimeoutException {
         long t = System.currentTimeMillis();
@@ -165,6 +196,11 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Wait for a window which fulfills the given condition
+     * @param timeout The maximum wait time
+     * @param <T> The window class
+     * @param condition The condition to check
+     * @return The window instance
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public <T extends java.awt.Window> T waitForWindow(Timeout timeout, Predicate<Window> condition) throws TimeoutException {
         log("WAIT FOR WINDOW BY CONDITION");
@@ -173,6 +209,11 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Wait for a window which fulfills the given condition
+     * @param timeout The maximum wait time
+     * @param condition The condition to check
+     * @param <T> The window class
+     * @return The window instance
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public <T extends java.awt.Window> T waitForWindow_internal(Timeout timeout, Predicate<Window> condition) throws TimeoutException {
         if (timeout == Timeout.NONE)
@@ -207,6 +248,9 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Waits for an JOptionPane based Dialog and closes it using the given result
+     * @param timeout The maximum wait time
+     * @param result The result object the JOptionPane should return
+     * @throws TimeoutException Thrown if the timeout occurred
      */
     public void waitForAndDimissOptionPane(Timeout timeout, Object result) throws TimeoutException {
         log("WAIT FOR OPTIONPANE");
@@ -226,6 +270,7 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
 
     /**
      * Wait for the given amount of time
+     * @param timeout The wait time
      */
     public void wait(Timeout timeout) {
         if (timeout.getMilliseconds() >= 1000) {
@@ -258,9 +303,10 @@ public abstract class SwingAutomationTest<THost extends UIAutomationHost> extend
     /**
      * Return the first component of the given class which is a child of parent or contained in
      * any of parent's children and which fulfills the given condition
+     * @param <T> The class of the component to find
      * @param parent The container to start searching for the class
      * @param componentClass The class of the component to find
-     * @param <T> The class of the component to find
+     * @param condition The condition to check
      * @return Component instance if found or null otherwise
      */
     public static <T extends Component> T findComponent(Container parent, Class<T> componentClass, Predicate<T> condition) {

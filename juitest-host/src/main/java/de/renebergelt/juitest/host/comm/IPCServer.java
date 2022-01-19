@@ -19,12 +19,21 @@ public class IPCServer {
     private int port;
     private IPCHandler messageHandler;
 
+    /**
+     * Create a new instance of the IPCServer
+     * @param host The server's host
+     * @param port The server's port
+     * @param messageHandler The IPCHandler to use
+     */
     public IPCServer(String host, int port, IPCHandler messageHandler) {
         this.host = NullGuard.forArgument("host", host);
         this.port = port;
         this.messageHandler = NullGuard.forArgument("messageHandler", messageHandler);
     }
 
+    /**
+     * Starts the server which then waits for incoming connections
+     */
     public void run() {
         // Create event loop groups. One for incoming connections handling and
         // second for handling actual event by workers

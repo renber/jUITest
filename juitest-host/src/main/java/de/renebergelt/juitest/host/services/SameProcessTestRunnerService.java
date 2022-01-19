@@ -46,6 +46,10 @@ public class SameProcessTestRunnerService implements TestRunnerService {
 
     String testBasePackage;
 
+    /**
+     * Set the IPCTransmitter instance which can be used for sending IPC messages
+     * @param transmitter the IPCTransmitter instance
+     */
     public void setTransmitter(IPCTransmitter transmitter) {
         this.transmitter = transmitter;
 
@@ -54,6 +58,11 @@ public class SameProcessTestRunnerService implements TestRunnerService {
         }
     }
 
+    /**
+     * Create a new instance of the SameProcessTestRunnerService
+     * @param host The UIAutomationHost to use
+     * @param testBasePackage The base package name to search for automation test classes and methods
+     */
     public SameProcessTestRunnerService(UIAutomationHost host, String testBasePackage) {
         this.automationHost = host;
         this.testBasePackage = testBasePackage;

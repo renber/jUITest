@@ -10,6 +10,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * CLass which acts as Server for the IPC
+ */
 public class IPCProtocolServerHandler extends SimpleChannelInboundHandler<IPCProtocol.IPCMessage> implements IPCTransmitter {
 
     ExecutorService workers = Executors.newCachedThreadPool();
@@ -18,6 +21,10 @@ public class IPCProtocolServerHandler extends SimpleChannelInboundHandler<IPCPro
 
     private Channel activeChannel;
 
+    /**
+     * Create a new instance of the IPCProtocolServerHandler
+     * @param messageHandler The IPCHandler to use
+     */
     public IPCProtocolServerHandler(IPCHandler messageHandler) {
         this.messageHandler = messageHandler;
     }
