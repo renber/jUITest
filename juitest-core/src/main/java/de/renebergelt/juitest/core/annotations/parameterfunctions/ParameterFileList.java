@@ -15,11 +15,32 @@ import java.util.List;
 @Target(ElementType.METHOD)
 @Repeatable(ParameterFileListContainer.class)
 @TestParameterMarker(evaluationClass = ParameterFileListEvaluationFunc.class)
+/**
+ * A test parameter which captures filenames based on a path and a file mask
+ */
 public @interface ParameterFileList {
+    /**
+     * Index of the parameter
+     * @return index
+     */
     int index();
+
+    /**
+     * The name of the parameter
+     * @return name
+     */
     String name() default "";
 
+    /**
+     * The path to search for files (relative to the execution directory)
+     * @return path
+     */
     String path() default "";
+
+    /**
+     * A filename mask. Wildcards (* and ?) are supported
+     * @return filemask
+     */
     String filemask() default "";
 }
 

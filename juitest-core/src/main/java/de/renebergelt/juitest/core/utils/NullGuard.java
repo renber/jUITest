@@ -16,6 +16,7 @@ public class NullGuard {
      * Returns value if value is not null, otherwise throws an ArgumentNullException
      * Should be used to ensure fast-fail on null arguments
      * @param argumentName The name of the argument to be checked (gets inserted in the exception message)
+     * @param <T> The argument type
      * @param value The value of teh argument
      * @return value if it is not null
      */
@@ -30,23 +31,13 @@ public class NullGuard {
      * Returns value, or defaultValue if value is null
      * @param value The value to check
      * @param defaultValue The default value (must not be null)
+     * @param <T> Type of the value
      * @return value, or defaultValue when value is null
      */
     public static <T> T defaultForNull(T value, T defaultValue) {
         NullGuard.forArgument("defaultValue", defaultValue);
 
         return value == null ? defaultValue : value;
-    }
-
-    /**
-     * Returns the result of supplier.apply(parent) if parent is not null
-     * if parent is null, null is returned
-     */
-    public static <TParent, TValue> TValue parentNullFallback(TParent parent, Function<TParent, TValue> supplier) {
-        if (parent == null)
-            return null;
-
-        return supplier.apply(parent);
     }
 
 }

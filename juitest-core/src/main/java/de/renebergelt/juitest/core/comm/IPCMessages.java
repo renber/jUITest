@@ -9,29 +9,52 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Helper class for constructing IPC messages
+ */
 public class IPCMessages {
 
     private IPCMessages() {
-
+        // --
     }
 
+    /**
+     * Create a new AttachMessage
+     * @param programArguments The arguments to pass to the application-under-test
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createAttachMessage(String...programArguments) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
         builder.setAttach(IPCProtocol.AttachMessage.newBuilder().addAllProgramArguments(Arrays.asList(programArguments)).build());
         return builder.build();
     }
 
+    /**
+     * Create a new SimpleResponseMessage which indicates success or failure of a prior request
+     * @param status The status of the original request
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createSimpleResponseMessage(IPCProtocol.ResponseStatus status) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
         builder.setSimpleResponse(IPCProtocol.SimpleResponseMessage.newBuilder().setStatus(status).build());
         return builder.build();
     }
 
+    /**
+     * Create a new GetTestsMessage to request a list of available tests
+     * from a test host
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createGetTestsMessage() {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
         return builder.setGetTests(IPCProtocol.GetTestsMessage.newBuilder().build()).build();
     }
 
+    /**
+     * Create a new TestListMessage which lists available tests
+     * @param tests The list of tests to include in the message
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createTestListMessage(List<TestDescriptor> tests) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
         IPCProtocol.TestListMessage.Builder mBuilder = IPCProtocol.TestListMessage.newBuilder();
@@ -53,6 +76,13 @@ public class IPCMessages {
         return builder.build();
     }
 
+    /**
+     * Create a new RunTestMessage which instructs teh test host to run a certain test
+     * @param testClassName The full-qualified name of the class which contains the test method
+     * @param testMethodName The name of the test method
+     * @param parameters The parameters of the test as list of tuples (parameter name, value)
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createRunTestMessage(String testClassName, String testMethodName, Object...parameters) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 
@@ -91,6 +121,12 @@ public class IPCMessages {
         return builder.build();
     }
 
+    /**
+     * Converts the given name and value to a TestParameter
+     * @param name The name of the parameter
+     * @param value The value of the parameter
+     * @return The TestParameter instance
+     */
     private static IPCProtocol.TestParameter convertParameter(String name, Object value) {
         IPCProtocol.TestParameter.Builder builder = IPCProtocol.TestParameter.newBuilder();
         builder.setName(name);
@@ -110,6 +146,11 @@ public class IPCMessages {
         return builder.build();
     }
 
+    /**
+     * Extracts the tests from a TestListMessage
+     * @param message The message to parse
+     * @return List of tests contained in the message
+     */
     public static List<TestDescriptor> readTestListMessage(IPCProtocol.TestListMessage message) {
 
         List<TestDescriptor> rList = new ArrayList<>();
@@ -151,6 +192,11 @@ public class IPCMessages {
         return rList;
     }
 
+    /**
+     * Extracts the TestDescriptor for the test to run from a RunTestMessage
+     * @param message The message to parse
+     * @return TestDescriptor containing the test information from the message
+     */
     public static TestDescriptor readRunTestMessage(IPCProtocol.RunTestMessage message) {
 
         List<Object> parameters = new ArrayList<>();
@@ -181,6 +227,12 @@ public class IPCMessages {
         return new TestDescriptor(message.getTestClassName(), message.getTestMethodName(), parameters.toArray());
     }
 
+    /**
+     * Create a TestResult message which indicates the result of a run test
+     * @param result The test result
+     * @param errorText The error text, if the test failed
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createTestResultMessage(IPCProtocol.TestResult result, Optional<String> errorText) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 
@@ -193,12 +245,22 @@ public class IPCMessages {
         return builder.setTestResult(resultBuilder).build();
     }
 
+    /**
+     * Create a CancelTest message which instructs the test host to cancel the currently running test
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createCancelTestMessage() {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
         builder.setCancelTest(IPCProtocol.CancelTestMessage.newBuilder().build());
         return builder.build();
     }
 
+    /**
+     * Create a TestLogMessage which contains a log message of a test in execution
+     * @param testId Id of the test which output the log message
+     * @param logMessage The log message
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createTestLogMessage(String testId, String logMessage) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 
@@ -209,6 +271,13 @@ public class IPCMessages {
         return builder.setTestLog(logBuilder).build();
     }
 
+    /**
+     * Create a TestStatusMessage which indicates the current status of a test
+     * @param testId Id of the test
+     * @param message A message describing the current status
+     * @param status Status of the test
+     * @return Instance of the message
+     */
     private static IPCProtocol.IPCMessage createTestStatusMessage(String testId, String message, IPCProtocol.TestStatus status) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 
@@ -220,18 +289,40 @@ public class IPCMessages {
         return builder.setTestStatus(statusBuilder).build();
     }
 
+    /**
+     * Create a TestStartedMessage which indicates that a test has been started execution
+     * @param testId Id of the test which has been started
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createTestStartedMessage(String testId) {
         return createTestStatusMessage(testId, "", IPCProtocol.TestStatus.RUNNING);
     }
 
+    /**
+     * Create a TestFailedToStartMessage which indicates that a test could not be run
+     * @param testId Id of the test which has been started
+     * @param message Message which describes the cause for the failure
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createTestFailedToStartMessage(String testId, String message) {
         return createTestStatusMessage(testId, message, IPCProtocol.TestStatus.FAILED_TO_START);
     }
 
+    /**
+     * Create a TestPausedMessage which indicates that a test was paused
+     * @param testId Id of the test which was paused
+     * @param message A message to display to the user
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createTestPausedMessage(String testId, String message) {
         return createTestStatusMessage(testId, message, IPCProtocol.TestStatus.PAUSED);
     }
 
+    /**
+     * Create a ResumeTestMessage which instructs the test host to resume a paused test
+     * @param testId Id of the test to resume
+     * @return Instance of the message
+     */
     public static IPCProtocol.IPCMessage createResumeTestMessage(String testId) {
         IPCProtocol.IPCMessage.Builder builder = IPCProtocol.IPCMessage.newBuilder();
 

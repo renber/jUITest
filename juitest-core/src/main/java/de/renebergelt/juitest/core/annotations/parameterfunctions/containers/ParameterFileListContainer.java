@@ -17,5 +17,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @TestParameterContainer
 public @interface ParameterFileListContainer {
+
+    /**
+     * The ParameterFileList objects contained in this container
+     * @return ParameterFileLists
+     */
     ParameterFileList[] value();
 }

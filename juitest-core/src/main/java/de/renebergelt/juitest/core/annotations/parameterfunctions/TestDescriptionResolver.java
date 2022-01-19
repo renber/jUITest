@@ -8,10 +8,16 @@ import java.util.regex.Pattern;
  */
 public class TestDescriptionResolver {
 
-    public String resolve(String name, Object[] parameters) {
+    /**
+     * Replaces {{p:parameter}} in a test description with the parameter values
+     * @param text The text to replace in
+     * @param parameters The available parameters
+     * @return The text with inserted parameter names
+     */
+    public String resolve(String text, Object[] parameters) {
 
         Pattern regex = Pattern.compile("\\{\\{(.*?)\\}\\}");
-        Matcher m = regex.matcher(name);
+        Matcher m = regex.matcher(text);
         while (m.find()) {
             String innerText = m.group(1);
 
@@ -19,14 +25,14 @@ public class TestDescriptionResolver {
                 String pValue = getParamValue(innerText.substring(2), parameters);
 
                 // m.replaceFirst removes special chars (such as forward slashes) from pValue
-                //name = m.replaceFirst(pValue);
-                name = name.replace("{{" + innerText + "}}", pValue);
+                //text = m.replaceFirst(pValue);
+                text = text.replace("{{" + innerText + "}}", pValue);
             }
 
-            m = regex.matcher(name);
+            m = regex.matcher(text);
         }
 
-        return name;
+        return text;
     }
 
     private String getParamValue(String paramName, Object[] parameters) {

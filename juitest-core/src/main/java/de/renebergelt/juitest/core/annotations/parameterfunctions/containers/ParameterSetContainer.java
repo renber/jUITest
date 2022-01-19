@@ -16,5 +16,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @TestParameterContainer
 public @interface ParameterSetContainer {
+
+    /**
+     * The ParameterSet objects contained in this container
+     * @return ParameterSets
+     */
     ParameterSet[] value();
 }

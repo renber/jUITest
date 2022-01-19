@@ -17,5 +17,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @TestParameterContainer
 public @interface ParameterRangeContainer {
+
+    /**
+     * The ParameterRange objects contained in this container
+     * @return ParameterRanges
+     */
     ParameterRange[] value();
 }

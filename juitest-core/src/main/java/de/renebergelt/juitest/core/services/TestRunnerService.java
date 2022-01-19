@@ -15,12 +15,14 @@ public interface TestRunnerService {
 
     /**
      * Indicates whether the runner service has been attached to an instance of the application under test
+     * @return true if the test runner is attached
      */
     boolean isAttached();
 
     /**
      * Attach this test runner to a (new) instance of the application under test which is launched
      * using the given arguments
+     * @param programArguments Parameters to pass to the main function of the application-under-test
      */
     void attach(String...programArguments);
 
@@ -31,6 +33,7 @@ public interface TestRunnerService {
 
     /**
      * Return a list of all available tests
+     * @return List of available tests
      */
     List<TestDescriptor> discoverTests();
 
@@ -48,6 +51,9 @@ public interface TestRunnerService {
      */
     void resumeTest();
 
+    /**
+     * Indicate that the currently running test should be cancelled
+     */
     void cancelRunningTest();
 
     /**

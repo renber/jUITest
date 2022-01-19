@@ -9,8 +9,16 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Helper class for TestParameter resolving
+ */
 public class TestParameterResolver {
 
+    /**
+     * Retrieve the index of the given parameter annotation
+     * @param a The TestParameter annotation
+     * @return The index
+     */
     protected Integer getParameterIndex(Annotation a) {
         try {
             Method m = a.annotationType().getMethod("index");
@@ -20,6 +28,11 @@ public class TestParameterResolver {
         }
     }
 
+    /**
+     * Retrieve the name of the given parameter annotation
+     * @param a The TestParameter annotation
+     * @return The name
+     */
     protected String getParameterName(Annotation a) {
         try {
             Method m = a.annotationType().getMethod("name");
@@ -29,16 +42,31 @@ public class TestParameterResolver {
         }
     }
 
+    /**
+     * Returns the names of the test parameters of the given methid
+     * @param uiTestMethod The method
+     * @return List o ftest parameter names
+     */
     public List<String> getDeclaredParameterNames(Method uiTestMethod) {
         List<Annotation> parameters = getParameters(uiTestMethod);
         parameters.sort(Comparator.comparing(this::getParameterIndex));
         return parameters.stream().map(x -> getParameterName(x)).collect(Collectors.toList());
     }
 
+    /**
+     * Return whether the given method has tets parameter annotations
+     * @param uiTestMethod The method
+     * @return True, if the method has test parameters
+     */
     public boolean hasParameters(Method uiTestMethod) {
         return Arrays.stream(uiTestMethod.getAnnotations()).anyMatch(x -> x.annotationType().isAnnotationPresent(TestParameterContainer.class) || x.annotationType().isAnnotationPresent(TestParameterMarker.class));
     }
 
+    /**
+     * Extracts the annotations contained in the given container annotation
+     * @param containerAnnotation The annotation to flatten
+     * @return List of contained annotations
+     */
     public List<Annotation> unrollParameterContainer(Annotation containerAnnotation) {
         try {
             return Arrays.asList((Annotation[])containerAnnotation.annotationType().getMethod("value").invoke(containerAnnotation));
@@ -47,6 +75,11 @@ public class TestParameterResolver {
         }
     }
 
+    /**
+     * Retrieve a list of all test parameter annotations present at the given method
+     * @param uiTestMethod The method
+     * @return List of tets parameter annotations
+     */
     public List<Annotation> getParameters(Method uiTestMethod) {
         // get all annotations which are marked with TestParameterMarker
         List<Annotation> alist = new ArrayList<>();
@@ -56,6 +89,11 @@ public class TestParameterResolver {
         return alist;
     }
 
+    /**
+     * Resolves the test parameters (including all permutations) of the given method
+     * @param uiTestMethod The method
+     * @return List of parameter configurations as (name, value) tuples
+     */
     public List<Object[]> resolveParameterSets(Method uiTestMethod) {
 
         // get all annotations of the methods which have a TestParameter annotation

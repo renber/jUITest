@@ -9,6 +9,11 @@ import java.util.List;
  */
 public interface TestParameterEvaluationFunc<T extends Annotation> {
 
+    /**
+     * Returns the values defined by the given TestParameter annotation
+     * @param parameterAnnotation The annotation instance
+     * @return The parameter values
+     */
     List<Object> eval(T parameterAnnotation);
 
 }

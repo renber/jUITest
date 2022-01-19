@@ -9,6 +9,7 @@ public interface IPCTransmitter {
 
     /**
      * Send the given message to the other connection endpoint
+     * @param message The message to send
      */
     void sendMessage(IPCProtocol.IPCMessage message);
 
