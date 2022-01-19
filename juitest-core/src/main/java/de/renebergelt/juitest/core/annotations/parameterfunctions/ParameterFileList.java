@@ -11,13 +11,13 @@ import java.lang.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A test parameter which captures filenames based on a path and a file mask
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Repeatable(ParameterFileListContainer.class)
 @TestParameterMarker(evaluationClass = ParameterFileListEvaluationFunc.class)
-/**
- * A test parameter which captures filenames based on a path and a file mask
- */
 public @interface ParameterFileList {
     /**
      * Index of the parameter
